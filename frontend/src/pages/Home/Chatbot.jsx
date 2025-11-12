@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MessageCircle, X, Send } from "lucide-react"; // Added Send icon for the button
 import { v4 as uuidv4 } from 'uuid';
+import { API_BASE_URL } from '../../api';
 
-const CHATBOT_BACKEND_URL = 'http://localhost:5000/api/chatbot';
+const CHATBOT_BACKEND_URL = `${API_BASE_URL}/api/chatbot`;
 
 const Chatbot = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([

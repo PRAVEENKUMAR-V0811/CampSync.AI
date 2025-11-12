@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TestimonialSlider from '../TestimonialSlider';
 import CompanyScroller from '../CompanyScroller';
+import { API_BASE_URL } from '../../api';
 
 const Signup = ({ onSwitchToLogin }) => {
   const [name, setName] = useState('');
@@ -108,7 +109,7 @@ const Signup = ({ onSwitchToLogin }) => {
       try {
         const config = { headers: { 'Content-Type': 'application/json' } };
         const { data } = await axios.post(
-          'http://localhost:5000/api/auth/signup',
+          `${API_BASE_URL}/api/auth/signup`,
           {
             name, gender, email, password, phone,
             education, college, branch,

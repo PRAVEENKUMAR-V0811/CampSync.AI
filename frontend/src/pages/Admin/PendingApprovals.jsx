@@ -5,6 +5,7 @@ import AuthContext from '../Auth/AuthContext'; // Adjust path
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faCheckCircle, faTimesCircle, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { API_BASE_URL } from '../../api';
 
 const PendingApprovals = () => {
   const [pendingPapers, setPendingPapers] = useState([]);
@@ -33,7 +34,7 @@ const PendingApprovals = () => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const response = await axios.get('http://localhost:5000/api/question-papers/admin/pending', config);
+      const response = await axios.get(`${API_BASE_URL}/api/question-papers/admin/pending`, config);
       setPendingPapers(response.data);
     } catch (err) {
       const errorMessage = err.response && err.response.data.message
@@ -54,7 +55,7 @@ const PendingApprovals = () => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      await axios.put(`http://localhost:5000/api/question-papers/admin/${paperId}/approve`, {}, config);
+      await axios.put(`${API_BASE_URL}/api/question-papers/admin/${paperId}/approve`, {}, config);
       alert('Paper approved successfully!');
       fetchPendingPapers();
     } catch (err) {
@@ -79,7 +80,7 @@ const PendingApprovals = () => {
           'Content-Type': 'application/json',
         },
       };
-      await axios.put(`http://localhost:5000/api/question-papers/admin/${paperId}/reject`, { reason }, config);
+      await axios.put(`${API_BASE_URL}/api/question-papers/admin/${paperId}/reject`, { reason }, config);
       alert('Paper rejected successfully!');
       fetchPendingPapers();
     } catch (err) {

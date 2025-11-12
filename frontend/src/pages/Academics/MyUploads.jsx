@@ -1,11 +1,12 @@
 // src/pages/User/MyUploads.js
-import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
-import AuthContext from '../Auth/AuthContext'; // Adjust path
-import { format } from 'date-fns';
+import { faCheckCircle, faClock, faFilePdf, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faClock, faCheckCircle, faTimesCircle, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+import { format } from 'date-fns';
+import { useContext, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { API_BASE_URL } from '../../api';
+import AuthContext from '../Auth/AuthContext'; // Adjust path
 
 const MyUploads = () => {
   const [myPapers, setMyPapers] = useState([]);
@@ -29,7 +30,7 @@ const MyUploads = () => {
         },
       };
       // You'll need a new backend route for this: GET /api/question-papers/my-uploads
-      const response = await axios.get('http://localhost:5000/api/question-papers/my-uploads', config);
+      const response = await axios.get(`${API_BASE_URL}/api/question-papers/my-uploads`, config);
       setMyPapers(response.data);
     } catch (err) {
       const errorMessage = err.response && err.response.data.message

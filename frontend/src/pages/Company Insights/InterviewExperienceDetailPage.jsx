@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import { FaArrowLeft, FaSpinner, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import { format } from 'date-fns';
+import { API_BASE_URL } from '../../api';
 
 const InterviewExperienceDetailPage = () => {
   const { id } = useParams();
@@ -16,7 +17,7 @@ const InterviewExperienceDetailPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/api/experiences/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/experiences/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch detailed interview experience.');
       }
@@ -37,7 +38,7 @@ const InterviewExperienceDetailPage = () => {
 
   const handleVote = async (type) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/experiences/${id}/${type}`, {
+      const response = await fetch(`${API_BASE_URL}/api/experiences/${id}/${type}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

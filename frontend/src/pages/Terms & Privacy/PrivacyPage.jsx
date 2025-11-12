@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const lastUpdated = "September 22, 2025";
-const contactEmail = "admin@campusconnect.ai"; // replace with your contact
+const contactEmail = "info@campsync.ai"; // replace with your contact
 
 export default function PrivacyPage() {
   return (

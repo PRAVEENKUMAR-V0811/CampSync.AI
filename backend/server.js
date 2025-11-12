@@ -159,7 +159,7 @@ app.post('/api/chatbot', async (req, res) => {
 
 // ROOT ROUTE
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('Backend Server is Connected and Sucessfully running...');
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,14 +1,60 @@
-import React from 'react';
+import React, { useState } from "react";
+import emailjs from "@emailjs/browser";
+import toast from "react-hot-toast";
+import bgimage from '../assets/MeetCampSync.png';
 
 const AboutUs = () => {
+  // Reuse same state variables and logic as in ContactSection
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [status, setStatus] = useState("");
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!formData.name || !formData.email || !formData.message) {
+      setStatus("Please fill in all fields.");
+      toast.error("Please fill in all fields.");
+      return;
+    }
+
+    setStatus("Sending...");
+
+    emailjs
+      .send(
+        "service_bss2a6h", // service ID
+        "template_bg1lvnu", // template ID
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
+        },
+        "Gw41erOgGgrGjyrIh" // public key
+      )
+      .then(
+        () => {
+          toast.success("Message sent successfully!");
+          setStatus("");
+          setFormData({ name: "", email: "", message: "" });
+        },
+        (error) => {
+          console.error(error);
+          toast.error("Failed to send message. Try again later.");
+          setStatus("");
+        }
+      );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-blue-600 to-purple-700 text-white py-20 px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-0 z-0 opacity-10">
-          {/* Background image or pattern */}
           <img
-            src="https://images.unsplash.com/photo-1517245386807-f3d2f9e4f2e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzNjUyOXwwfDF8c2VhcmNofDIyfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwZWR1Y2F0aW9ufGVufDB8fHx8MTY3ODkzMDc2MQ&ixlib=rb-4.0.3&q=80&w=1080"
+            src={bgimage}
             alt="AI education background"
             className="w-full h-full object-cover"
           />
@@ -144,32 +190,11 @@ const AboutUs = () => {
           <p className="mt-10 text-xl text-gray-700 font-semibold">
             These numbers reflect the success stories powered by CampSync.AI.
           </p>
-          <div className="mt-8 flex justify-center">
-            {/* Image illustrating placement trends or data visualization */}
-            {/* You could embed a small chart or a descriptive image here */}
-            
-          </div>
         </div>
       </section>
 
-      {/* Call to Action Section */}
-      <section className="bg-gradient-to-r from-green-500 to-teal-600 text-white py-20 px-4 sm:px-6 lg:px-8 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Ready to Boost Your Career?
-          </h2>
-          <p className="text-lg sm:text-xl mb-10 max-w-2xl mx-auto">
-            Join thousands of students and alumni who are leveraging CampSync.AI
-            to achieve their placement and academic goals. Your future starts now.
-          </p>
-          <button className="bg-white text-green-700 hover:bg-gray-100 font-bold py-3 px-8 rounded-full text-lg sm:text-xl shadow-lg transform hover:scale-105 transition duration-300 ease-in-out">
-            Sign Up for Free
-          </button>
-        </div>
-      </section>
-
-      {/* Contact Us Section - optional to put here or link to a separate page */}
-      {/* <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+      {/* Contact Section with EmailJS integrated */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8">
             Get In Touch
@@ -177,10 +202,24 @@ const AboutUs = () => {
           <p className="text-lg text-gray-600 mb-8">
             Have questions or want to learn more? We'd love to hear from you!
           </p>
-          <form className="space-y-6">
+
+          {status && (
+            <p
+              className={`mb-4 ${
+                status.includes("success") ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {status}
+            </p>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <input
                 type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
                 placeholder="Your Name"
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
@@ -188,14 +227,20 @@ const AboutUs = () => {
             <div>
               <input
                 type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="Your Email"
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
               <textarea
-                placeholder="Your Message"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
                 rows="5"
+                placeholder="Your Message"
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               ></textarea>
             </div>
@@ -207,7 +252,7 @@ const AboutUs = () => {
             </button>
           </form>
         </div>
-      </section> */}
+      </section>
     </div>
   );
 };

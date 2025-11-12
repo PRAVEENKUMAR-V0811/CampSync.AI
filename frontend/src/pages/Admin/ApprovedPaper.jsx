@@ -6,6 +6,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faTrashAlt, faCheckCircle, faTimesCircle, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import { format } from 'date-fns';
+import { API_BASE_URL } from '../../api';
 
 const ApprovedPapers = () => {
   const [papers, setPapers] = useState([]); // Renamed from approvedPapers for clarity
@@ -35,7 +36,7 @@ const ApprovedPapers = () => {
         },
       };
       // Fetches all papers for admin, including rejected/inactive
-      const response = await axios.get('http://localhost:5000/api/admin/question-papers/admin/all', config);
+      const response = await axios.get(`${API_BASE_URL}/api/admin/question-papers/admin/all`, config);
       // Filter for approved papers
       setPapers(response.data.filter(paper => paper.status === 'approved'));
     } catch (err) {
@@ -57,7 +58,7 @@ const ApprovedPapers = () => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      await axios.delete(`http://localhost:5000/api/admin/question-papers/${paperId}`, config);
+      await axios.delete(`${API_BASE_URL}/api/admin/question-papers/${paperId}`, config);
       alert('Paper deleted successfully!');
       fetchAllAdminPapers(); // Refresh the list
     } catch (err) {

@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilePdf, faDownload, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { format } from 'date-fns'; // For date formatting
+import { API_BASE_URL } from '../../api';
 
 const QuestionBank = () => {
   const [papers, setPapers] = useState([]);
@@ -27,7 +28,7 @@ const QuestionBank = () => {
       if (filters.exam_name) queryParams.append('exam_name', filters.exam_name);
       if (filters.year) queryParams.append('year', filters.year);
 
-      const response = await axios.get(`http://localhost:5000/api/question-papers?${queryParams.toString()}`);
+      const response = await axios.get(`${API_BASE_URL}/api/question-papers?${queryParams.toString()}`);
       setPapers(response.data);
     } catch (err) {
       const errorMessage = err.response && err.response.data.message

@@ -1,15 +1,3 @@
-// import React from 'react';
-// import { Navigate, Outlet } from 'react-router-dom';
-
-// const ProtectedRoute = () => {
-//   const userInfo = localStorage.getItem('userInfo'); // Get user info from localStorage
-
-//   return userInfo ? <Outlet /> : <Navigate to="/login" replace />;
-// };
-
-// export default ProtectedRoute;
-
-// src/components/ProtectedRoute.js
 import React, { useContext } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import AuthContext from './AuthContext';

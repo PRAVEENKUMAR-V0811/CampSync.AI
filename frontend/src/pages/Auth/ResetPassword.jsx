@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../../api';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -80,7 +81,7 @@ const ResetPassword = () => {
         },
       };
       const { data } = await axios.put(
-        `http://localhost:5000/api/auth/resetpassword/${resetToken}`,
+        `${API_BASE_URL}/api/auth/resetpassword/${resetToken}`,
         { password },
         config
       );

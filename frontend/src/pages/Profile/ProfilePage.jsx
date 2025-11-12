@@ -3,6 +3,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios'; // Use axios for consistency
 import AuthContext from '../Auth/AuthContext'; // Adjust path based on your structure
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../../api';
 
 const ProfilePage = () => {
   const { user, loading: authLoading, logout } = useContext(AuthContext);
@@ -32,7 +33,7 @@ const ProfilePage = () => {
             'Authorization': `Bearer ${user.token}`, // Get token from AuthContext's user object
           },
         };
-        const { data } = await axios.get('http://localhost:5000/api/auth/profile', config);
+        const { data } = await axios.get(`${API_BASE_URL}/api/auth/profile`, config);
         setUserData(data);
       } catch (err) {
         const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch profile';
