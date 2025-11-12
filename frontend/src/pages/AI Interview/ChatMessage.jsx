@@ -1,0 +1,241 @@
+// import React, { useState, useEffect } from 'react';
+// import remarkGfm from 'remark-gfm';
+// import ReactMarkdown from 'react-markdown';
+
+// const ChatMessage = ({ type, text, isLastBotMessage, isTyping }) => {
+//   const isBot = type === 'bot';
+//   const alignment = isBot ? 'self-start' : 'self-end';
+
+//   const [displayedText, setDisplayedText] = useState('');
+//   const [showCursor, setShowCursor] = useState(true);
+
+//   useEffect(() => {
+//     if (isLastBotMessage && !isTyping && text && text.length > 0) {
+//       setDisplayedText('');
+//       let i = 0;
+//       const typingInterval = setInterval(() => {
+//         if (i < text.length) {
+//           setDisplayedText((prev) => prev + text.charAt(i));
+//           i++;
+//         } else {
+//           clearInterval(typingInterval);
+//           setShowCursor(false);
+//         }
+//       }, 20);
+//       return () => {
+//         clearInterval(typingInterval);
+//         setShowCursor(true);
+//       };
+//     } else {
+//       setDisplayedText(text);
+//       setShowCursor(false);
+//     }
+//   }, [text, isLastBotMessage, isTyping]);
+
+//   useEffect(() => {
+//     if (isTyping) {
+//       const cursorInterval = setInterval(() => {
+//         setShowCursor((prev) => !prev);
+//       }, 500);
+//       return () => clearInterval(cursorInterval);
+//     } else {
+//       setShowCursor(false);
+//     }
+//   }, [isTyping]);
+
+//   return (
+//     <div className={`flex ${alignment} max-w-[85%] animate-fade-in`}>
+//       <div className={`relative p-4 rounded-xl shadow-lg border ${isBot ? 'bg-gradient-to-br from-indigo-50 to-blue-50 text-gray-800 border-indigo-200 rounded-bl-none' : 'bg-gradient-to-br from-green-50 to-emerald-50 text-gray-800 border-green-200 rounded-br-none'}`}>
+//         <p className="font-semibold text-xs mb-1 opacity-80">{isBot ? 'Interviewer Bot' : 'You'}</p>
+
+//         {isTyping ? (
+//           <p>
+//             Typing
+//             <span className={`inline-block w-1.5 h-3 ml-0.5 bg-gray-600 ${showCursor ? 'opacity-100' : 'opacity-0'}`} />
+//           </p>
+//         ) : (
+//           <ReactMarkdown remarkPlugins={[remarkGfm]}>
+//             {String(displayedText)}
+//           </ReactMarkdown>
+//         )}
+
+//         {isBot && (
+//           <div className="absolute left-0 bottom-0 w-3 h-3 bg-gradient-to-br from-indigo-50 to-blue-50 transform -translate-x-1/2 translate-y-1/2 rotate-45 rounded-sm shadow-md border-b border-l border-indigo-200" />
+//         )}
+//         {!isBot && (
+//           <div className="absolute right-0 bottom-0 w-3 h-3 bg-gradient-to-br from-green-50 to-emerald-50 transform translate-x-1/2 translate-y-1/2 rotate-45 rounded-sm shadow-md border-b border-r border-green-200" />
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ChatMessage;
+
+
+// import React, { useState, useEffect } from 'react';
+// import remarkGfm from 'remark-gfm';
+// import ReactMarkdown from 'react-markdown';
+
+// const ChatMessage = ({ type, text, isLastBotMessage, isTyping, isUserMessage }) => {
+//   const alignment = isUserMessage ? 'self-end' : 'self-start';
+
+//   const [displayedText, setDisplayedText] = useState('');
+//   const [showCursor, setShowCursor] = useState(true);
+
+//   useEffect(() => {
+//     if (!isUserMessage && isLastBotMessage && !isTyping && text) {
+//       setDisplayedText('');
+//       let i = 0;
+//       const typingInterval = setInterval(() => {
+//         if (i < text.length) {
+//           setDisplayedText(prev => prev + text[i]);
+//           i++;
+//         } else {
+//           clearInterval(typingInterval);
+//           setShowCursor(false);
+//         }
+//       }, 20);
+
+//       return () => clearInterval(typingInterval);
+//     } else {
+//       setDisplayedText(text);
+//       setShowCursor(false);
+//     }
+//   }, [text, isLastBotMessage, isTyping, isUserMessage]);
+
+//   useEffect(() => {
+//     if (isTyping) {
+//       const blink = setInterval(() => setShowCursor(prev => !prev), 500);
+//       return () => clearInterval(blink);
+//     }
+//   }, [isTyping]);
+
+//   const botBgClass = 'bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200 rounded-tr-none';
+//   const userBgClass = 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 rounded-tl-none';
+
+//   return (
+//     <div className={`flex ${alignment} max-w-[75%] animate-fade-in`}>
+//       <div className={`relative p-4 rounded-xl shadow-lg border ${isUserMessage ? userBgClass : botBgClass}`}>
+        
+//         <p className="font-semibold text-xs mb-1 opacity-80">
+//           {isUserMessage ? 'You' : 'Interviewer Bot'}
+//         </p>
+
+//         {isTyping ? (
+//           <p className="text-gray-600 italic flex items-center">
+//             <span className="animate-pulse mr-2 text-xl leading-none">...</span> Typing
+//           </p>
+//         ) : (
+//           <>
+//             <ReactMarkdown remarkPlugins={[remarkGfm]}>
+//               {displayedText || ''}
+//             </ReactMarkdown>
+
+//             {!isUserMessage && isLastBotMessage && showCursor && (
+//               <span className="inline-block w-1.5 h-3 ml-1 bg-gray-700 animate-pulse align-text-bottom"></span>
+//             )}
+//           </>
+//         )}
+
+//         {isUserMessage && (
+//           <div className="absolute right-0 bottom-0 w-3 h-3 bg-green-50 transform translate-x-1/2 translate-y-1/2 rotate-45 border-b border-r border-green-200"></div>
+//         )}
+//         {!isUserMessage && (
+//           <div className="absolute left-0 bottom-0 w-3 h-3 bg-indigo-50 transform -translate-x-1/2 translate-y-1/2 rotate-45 border-b border-l border-indigo-200"></div>
+//         )}
+
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ChatMessage;
+
+
+import React, { useState, useEffect } from 'react';
+import remarkGfm from 'remark-gfm';
+import ReactMarkdown from 'react-markdown';
+
+const ChatMessage = ({ type, text, isLastBotMessage, isTyping, isUserMessage }) => {
+  const alignmentClass = isUserMessage ? 'justify-end' : 'justify-start';
+
+  const [displayedText, setDisplayedText] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
+
+  useEffect(() => {
+    // If it's a typing indicator, handle animation
+    if (isTyping) {
+      setDisplayedText(text); // Display the "Typing..." or "... transcript" text immediately
+      setShowCursor(true); // Always show cursor for typing indicators
+    } else if (!isUserMessage && isLastBotMessage && text) { // Bot's final message, animate it
+      setDisplayedText('');
+      let i = 0;
+      const typingInterval = setInterval(() => {
+        if (i < text.length) {
+          setDisplayedText(prev => prev + text[i]);
+          i++;
+        } else {
+          clearInterval(typingInterval);
+          setShowCursor(false);
+        }
+      }, 20); // Adjust typing speed here
+
+      return () => clearInterval(typingInterval);
+    } else { // Normal message, display immediately
+      setDisplayedText(text);
+      setShowCursor(false);
+    }
+  }, [text, isLastBotMessage, isTyping, isUserMessage]);
+
+  useEffect(() => {
+    // Blinking cursor for typing messages
+    if (isTyping && showCursor) {
+      const blink = setInterval(() => setShowCursor(prev => !prev), 500);
+      return () => clearInterval(blink);
+    } else if (!isTyping) {
+      setShowCursor(false); // Ensure cursor is off for non-typing messages
+    }
+  }, [isTyping, showCursor]);
+
+  const botBgClass = 'bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200 rounded-tr-xl';
+  const userBgClass = 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 rounded-tl-xl';
+
+  return (
+    <div className={`flex ${alignmentClass} w-full animate-fade-in`}>
+      <div className={`relative p-4 rounded-xl shadow-lg border max-w-[75%] ${isUserMessage ? userBgClass : botBgClass}`}>
+        
+        <p className="font-semibold text-xs mb-1 opacity-80">
+          {isUserMessage ? 'You' : 'Interviewer Bot'}
+        </p>
+
+        {isTyping ? (
+          <p className="text-gray-600 italic flex items-center">
+            {/* Show "..." for bot typing, actual text for user speaking */}
+            {type === 'bot' ? <span className="animate-pulse mr-2 text-xl leading-none">...</span> : null}
+            {displayedText}
+            {showCursor && <span className="inline-block w-1.5 h-3 ml-1 bg-gray-700 animate-pulse align-text-bottom"></span>}
+          </p>
+        ) : (
+          <>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {displayedText || ''}
+            </ReactMarkdown>
+          </>
+        )}
+
+        {/* Triangle for User message (bottom-right) */}
+        {isUserMessage && (
+          <div className="absolute right-0 bottom-0 w-3 h-3 bg-emerald-50 transform translate-x-1/2 translate-y-1/2 rotate-45 border-b border-r border-green-200"></div>
+        )}
+        {/* Triangle for Bot message (bottom-left) */}
+        {!isUserMessage && (
+          <div className="absolute left-0 bottom-0 w-3 h-3 bg-blue-50 transform -translate-x-1/2 translate-y-1/2 rotate-45 border-b border-l border-indigo-200"></div>
+        )}
+
+      </div>
+    </div>
+  );
+};
+
+export default ChatMessage;

@@ -1,0 +1,6 @@
+npm install express mongoose bcryptjs jsonwebtoken dotenv cors
+npm install multer openai @google-cloud/text-to-speech @google-cloud/speech axios dotenv
+
+uuid
+
+npm install cloudinary

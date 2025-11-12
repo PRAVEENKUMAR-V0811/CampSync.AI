@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+@tailwind utilities;
+
+@theme {
+    --font-display: "Urbanist", sans-serif;
+    --breakpoint-3xl: 1920px;
+    --color-primary: #38BDF8;
+
+}
+
+@layer base {
+    html{
+        font-family : var(--font-display);
+    }
+
+    body{
+        background-color: #FDFEFE;
+        overflow-x: hidden;
+    }
+}
+
+/* custom scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(100,100,100,0.4);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(100,100,100,0.6);
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@layer utilities{
+    /* Animate text with shine effect */
+    @keyframes text-shine {
+        0% {
+            background-position: 0% 50%;
+        }
+        100% {
+            background-position: 100% 50%;
+        }
+    }
+
+    .animate-text-shine {
+        animation: text-shine 3s ease-in-out infinite alternate;
+    }
+}
+
+.input-box{
+    @apply w-full flex justify-between gap-3 text-sm text-black bg-[#FDFEFE] rounded px-4 py-3 mb-4 mt-3 border border-[#E0E0E0] outline-none focus-within:border-[#38BDF8];
+}
+
+.btn-primary{
+    @apply w-full text-sm font-medium text-white bg-[#1F2937] shadow-lg shadow-[#38BDF8]/10 p-[10px] rounded-md my-1 hover:bg-[#E0F2FE] hover:text-[#1F2937] cursor-pointer;
+}
+
+.btn-small{
+    @apply flex items-center gap-2 text-[13px] font-semibold text-white bg-gradient-to-r from-[#38BDF8]/90 to-[#22D3EE] px-5 py-1.5 rounded cursor-pointer;
+}
+
+.btn-small-light{
+    @apply flex items-center gap-2 text-[13px] font-semibold text-[#1F2937] bg-[#E0F2FE] border border-[#FDFEFE] hover:border-[#38BDF8] px-3 py-1.5 rounded cursor-pointer;
+}
+
+.form-input{
+    @apply w-full text-sm text-black outline-none bg-white border border-[#E0E0E0] px-2.5 py-3 rounded-md mt-2 placeholder:text-gray-500 focus-within:border-[#38BDF8];
+}
+
+
+/* Keyframes for scrolling animation */
+@keyframes scroll-left-to-right {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes scroll-right-to-left {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Apply animations to classes */
+.animate-scroll-ltr {
+  animation: scroll-left-to-right 180s linear infinite; /* Adjust duration as needed */
+}
+
+.animate-scroll-rtl {
+  animation: scroll-right-to-left 130s linear infinite; /* Adjust duration as needed */
+}
+
+/* To ensure continuous loop, you might need to duplicate content */
+.scrolling-wrapper {
+  display: flex;
+  width: fit-content; /* Ensure it's wide enough for duplicated content */
+}
+
+@keyframes fade-in-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.3s ease-out forwards;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* Custom CSS for the typing indicator */
+.dot-flashing {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #999;
+  color: #999;
+  animation: dotFlashing 1s infinite alternate;
+  animation-delay: 0s;
+}
+
+.dot-flashing::before, .dot-flashing::after {
+  content: '';
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #999;
+  color: #999;
+  animation: dotFlashing 1s infinite alternate;
+}
+
+.dot-flashing::before {
+  left: -15px;
+  animation-delay: .2s;
+}
+
+.dot-flashing::after {
+  left: 15px;
+  animation-delay: .4s;
+}
+
+@keyframes dotFlashing {
+  0% {
+    background-color: #999;
+  }
+  50%,
+  100% {
+    background-color: #eee;
+  }
+}
