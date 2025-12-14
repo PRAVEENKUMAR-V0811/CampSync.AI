@@ -92,6 +92,15 @@ const QuestionPaperUpload = () => {
       const errorMessage = err.response && err.response.data.message
         ? err.response.data.message
         : 'Failed to upload question paper. Please try again.';
+      
+      // Check for 401 Unauthorized
+      if (err.response && err.response.status === 401) {
+      toast.error("Session expired. Please login again.");
+      // Optionally clear local storage here if you manage auth manually
+      // localStorage.removeItem('userInfo'); 
+      navigate('/login'); // Redirect to login page
+      return;
+    }
       setError(errorMessage);
       toast.error(errorMessage);
       console.error('Upload error:', err.response || err);

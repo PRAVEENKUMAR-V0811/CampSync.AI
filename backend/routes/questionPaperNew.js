@@ -1,17 +1,23 @@
-// backend/routes/questionPaper.js
+// backend/routes/questionPaperNew.js
 const express = require('express');
 const router = express.Router();
-const QuestionPaper = require('../QuestionPaper/QuestionPaper');
+const QuestionPaper = require('../QuestionPaper/QuestionPaper'); // Ensure this path matches your folder structure
 const { protect, admin } = require('../middleware/authMiddleware');
 const upload = require('../config/multerConfig');
-const cloudinary = require('../config/cloudinaryConfig');
-const fs = require('fs');
-const path = require('path');
+const supabase = require('../config/supabaseConfig'); // Make sure you created this file!
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid'); // Run 'npm install uuid' if you haven't
+
 // @desc    Upload a new question paper
 // @route   POST /api/question-papers/upload
-// @access  Private (Users must be logged in)
+// @access  Private
 router.post('/upload', protect, upload.single('questionPaperFile'), async (req, res) => {
+  
+  // --- DEBUG LOG: IF YOU DON'T SEE THIS IN TERMINAL, OLD CODE IS RUNNING ---
+  console.log("----------------------------------------------------");
+  console.log("🚀 SUPABASE UPLOAD ROUTE HIT! (New Code is Running)");
+  console.log("----------------------------------------------------");
+
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded.' });
   }
@@ -19,59 +25,63 @@ router.post('/upload', protect, upload.single('questionPaperFile'), async (req, 
   const { title, description, subject, exam_name, year, tags } = req.body;
 
   if (!title || !subject || !exam_name || !year) {
-    fs.unlink(req.file.path, (err) => {
-      if (err) console.error('Error deleting local file after validation failure:', err);
-    });
-    return res.status(400).json({ message: 'Please provide all required fields: title, subject, exam name, and year.' });
+    return res.status(400).json({ message: 'Please provide all required fields.' });
   }
 
   try {
-    let resourceType = 'auto';
-    const fileExtension = path.extname(req.file.originalname).toLowerCase();
+    // 1. Generate Filename
+    const fileExtension = req.file.originalname.split('.').pop();
+    const fileName = `${Date.now()}_${uuidv4()}.${fileExtension}`;
+    const filePath = `uploads/${fileName}`;
 
-    if (fileExtension === '.pdf') {
-      resourceType = 'raw';
-    } else if (['.doc', '.docx'].includes(fileExtension)) {
-      resourceType = 'raw';
+    console.log(`Attempting to upload to Supabase: ${filePath}`);
+
+    // 2. Upload to Supabase
+    const { data, error } = await supabase
+      .storage
+      .from('question-papers') // CHECK YOUR SUPABASE BUCKET NAME HERE
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false
+      });
+
+    if (error) {
+      console.error("Supabase Error Details:", error);
+      throw error;
     }
 
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'question_papers',
-      resource_type: resourceType,
-      public_id: `qp_${path.parse(req.file.filename).name}`,
-    });
+    // 3. Get Public URL
+    const { data: publicUrlData } = supabase
+      .storage
+      .from('question-papers')
+      .getPublicUrl(filePath);
 
-    fs.unlink(req.file.path, (err) => {
-      if (err) console.error('Error deleting local file after successful Cloudinary upload:', err);
-    });
+    const publicUrl = publicUrlData.publicUrl;
+    console.log(`File uploaded successfully: ${publicUrl}`);
 
+    // 4. Save to MongoDB
     const newPaper = new QuestionPaper({
       title,
       description,
       subject,
       exam_name,
       year: parseInt(year),
-      file_url: result.secure_url,
+      file_url: publicUrl,
       original_filename: req.file.originalname,
       uploaded_by_user: req.user._id,
       tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
       status: 'Pending',
-      cloudinary_public_id: result.public_id,
+      storage_path: filePath 
     });
 
     const createdPaper = await newPaper.save();
     res.status(201).json(createdPaper);
+
   } catch (error) {
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting local file after failed Cloudinary/DB attempt:', err);
-      });
-    }
-    console.error('Error uploading question paper:', error);
+    console.error('Upload Process Failed:', error);
     res.status(500).json({ message: 'Server error during upload', error: error.message });
   }
 });
-
 // @desc    Get all APPROVED question papers (for users)
 // @route   GET /api/question-papers
 // @access  Public
@@ -148,10 +158,7 @@ router.get('/admin/all', protect, admin, async (req, res) => {
   }
 });
 
-// @desc    Get question papers uploaded by the logged-in user
-// @route   GET /api/question-papers/my-uploads
-// @access  Private (User must be logged in)
-
+// @desc    Get approved paper by ID (Duplicate route logic, but keeping it as per your file)
 router.get('/get-approved-question-paper/:id', async (req, res) => {
   try {
     const id = req.params.id;
@@ -183,7 +190,6 @@ router.get('/get-approved-question-paper/:id', async (req, res) => {
     });
   }
 });
-
 
 // @desc    Approve a question paper
 // @route   PUT /api/admin/question-papers/:id/approve
@@ -256,6 +262,16 @@ router.delete('/admin/:id', protect, admin, async (req, res) => {
     if (!paper) {
       return res.status(404).json({ message: 'Question paper not found' });
     }
+    
+    // Note: We are keeping the file in Supabase for safety.
+    // If you want to DELETE the file from Supabase permanently, uncomment below:
+    /*
+    if (paper.storage_path) {
+      const { error } = await supabase.storage.from('question-papers').remove([paper.storage_path]);
+      if(error) console.error("Error removing file from Supabase:", error);
+    }
+    */
+
     res.json({ message: 'Question paper marked as inactive (soft deleted)' });
 
   } catch (error) {

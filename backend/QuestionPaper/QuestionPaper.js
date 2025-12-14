@@ -8,11 +8,20 @@ const questionPaperSchema = mongoose.Schema(
     subject: { type: String, required: true, trim: true },
     exam_name: { type: String, required: true, trim: true },
     year: { type: Number, required: true },
-    file_url: { type: String, required: true }, // URL to the file in Cloudinary/Firebase
-    original_filename: { type: String, required: true }, // Original filename for download
+    
+    // Updated comment: This will now store the Supabase Public URL
+    file_url: { type: String, required: true }, 
+    
+    original_filename: { type: String, required: true }, 
+
+    // --- NEW FIELD ADDED BELOW ---
+    // Stores the internal path (e.g., "uploads/171543.pdf") to help with deletion
+    storage_path: { type: String, required: false }, 
+    // -----------------------------
+
     uploaded_by_user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to the User model
+      ref: 'User',
       required: true,
     },
     status: {
@@ -22,18 +31,17 @@ const questionPaperSchema = mongoose.Schema(
     },
     approved_by_admin: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to the User model (admin)
-      required: false, // Not required if pending or rejected
+      ref: 'User',
+      required: false,
     },
     approval_date: { type: Date, required: false },
     rejection_reason: { type: String, required: false },
-    is_active: { type: Boolean, default: true }, // For soft deletion/disabling
-    // You can add more fields here like extracted_text, tags, difficulty_level if you integrate AI
+    is_active: { type: Boolean, default: true },
     extracted_text: { type: String, default: '' },
     tags: [{ type: String, trim: true }],
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt fields
+    timestamps: true,
   }
 );
 
