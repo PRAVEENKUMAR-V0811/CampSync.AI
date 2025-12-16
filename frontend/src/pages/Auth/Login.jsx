@@ -7,7 +7,7 @@ import AuthContext from './AuthContext';
 import CompanyScroller from '../CompanyScroller';
 import { API_BASE_URL } from '../../api';
 
-const Login = ({ onSwitchToSignup }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -16,6 +16,10 @@ const Login = ({ onSwitchToSignup }) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
+
+  const handleSignUp = () => {
+  navigate('/signup')
+}
 
   const validatePassword = (pwd) => {
     if (!pwd) { setPasswordError("Password cannot be empty."); return false; }
@@ -167,7 +171,7 @@ const Login = ({ onSwitchToSignup }) => {
             New User?{' '}
             <button
               type="button"
-              onClick={onSwitchToSignup}
+              onClick={handleSignUp}
               className="font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
               disabled={isLoading}
             >

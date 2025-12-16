@@ -11,6 +11,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const fs = require('fs'); // For uploads folder
 const adminRoutes = require('./routes/adminRoutes')
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
 // Ensure 'uploads' folder exists
 const uploadDir = path.join(__dirname, 'uploads');
@@ -26,6 +27,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/api/feedback', feedbackRoutes); // Feedback routes
 
 
 // Connect to MongoDB

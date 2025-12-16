@@ -33,6 +33,10 @@ const Signup = ({ onSwitchToLogin }) => {
   const currentYear = new Date().getFullYear();
   const passingYearOptions = Array.from({ length: 10 }, (_, i) => currentYear + 5 - i);
 
+  const handleSignIn = () => {
+  navigate('/login')
+}
+
   const validatePassword = (pwd) => {
     if (!pwd) return "Password cannot be empty.";
     if (pwd.length < 8) return "Password must be at least 8 characters long.";
@@ -326,7 +330,7 @@ const Signup = ({ onSwitchToLogin }) => {
             Already have an account?{' '}
             <button
               type="button"
-              onClick={onSwitchToLogin}
+              onClick={handleSignIn}
               className="font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
               disabled={isLoading}
             >

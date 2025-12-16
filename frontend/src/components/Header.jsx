@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, LogOut, Bell, BookOpen, BarChart2, UserCheck, Mail } from 'lucide-react'; // Added icons for nav links
+import { Menu, X, ChevronDown, User, LogOut, Bell, BarChart2, UserCheck, Mail } from 'lucide-react'; // Added icons for nav links
 import logo from '../assets/Logo.png';
 const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,6 +17,7 @@ const Header = () => {
         { name: 'Dashboard', path: '/placements/data', icon: BarChart2 },
         { name: 'Interview Experience', path: '/company-insights', icon: UserCheck },
         { name: 'Contact Us', path: '/contact', icon: Mail },
+        { name: 'Feedback', path: '/submit-feedback', icon: UserCheck },
     ];
 
     const profileActions = [

@@ -25,7 +25,7 @@ import QuestionBank from './pages/Academics/QuestionBank';
 import MyUploads from './pages/Academics/MyUploads';
 import InterviewExperienceDetailPage from './pages/Company Insights/InterviewExperienceDetailPage';
 import AboutUs from './components/AboutUs';
-
+import SubmitFeedback from './pages/Feedback/SubmitFeedback';
 // --- NEW IMPORTS FOR ADMIN ---
 import AdminDashboard from '../src/pages/Admin/AdminDashboard'; // Your admin dashboard page
 // --- END NEW IMPORTS ---
@@ -55,6 +55,7 @@ const AppWrapper = () => {
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/resetpassword/:resetToken" element={<ResetPassword />} />
         <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/submit-feedback" element={<SubmitFeedback />} />
 
 
         {/* Protected Routes */}
