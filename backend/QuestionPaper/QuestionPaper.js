@@ -42,6 +42,7 @@ const questionPaperSchema = mongoose.Schema(
   },
   {
     timestamps: true,
+    collection: 'questionpapers' 
   }
 );
 

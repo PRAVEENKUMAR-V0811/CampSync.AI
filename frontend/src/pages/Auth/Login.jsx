@@ -56,7 +56,7 @@ const Login = ({ onSwitchToSignup }) => {
         toast.success(`Welcome back, ${data.name || data.email}!`);
 
         setTimeout(() => {
-          if (data.role === 'admin') navigate('/admin/dashboard');
+          if (data.role === 'admin') navigate('/admin');
           else if (attemptingAdminLogin) setLoginError('You are not authorized as an administrator.');
           else navigate('/dashboard');
         }, 500);

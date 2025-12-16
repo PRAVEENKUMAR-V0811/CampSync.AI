@@ -27,10 +27,7 @@ import InterviewExperienceDetailPage from './pages/Company Insights/InterviewExp
 import AboutUs from './components/AboutUs';
 
 // --- NEW IMPORTS FOR ADMIN ---
-import AdminLayout from '../src/pages/Admin/AdminLayout'; // Your admin layout component
 import AdminDashboard from '../src/pages/Admin/AdminDashboard'; // Your admin dashboard page
-import PendingApprovals from '../src/pages/Admin/PendingApprovals'; // Your admin pending papers page
-import ApprovedPapers from '../src/pages/Admin/ApprovedPaper'; // Your admin approved papers page
 // --- END NEW IMPORTS ---
 
 // Create a wrapper component to use useLocation
@@ -78,19 +75,14 @@ const AppWrapper = () => {
         {/* --- ADMIN PROTECTED ROUTES --- */}
         {/* This route group will only be accessible to users with the 'admin' role */}
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-          <Route path="/admin" element={<AdminLayout />}> {/* AdminLayout will be the parent for all admin pages */}
-            <Route index element={<AdminDashboard />} /> {/* Default admin route: /admin */}
-            <Route path="dashboard" element={<AdminDashboard />} /> {/* /admin/dashboard */}
-            <Route path="pending-approvals" element={<PendingApprovals />} /> {/* /admin/pending-approvals */}
-            <Route path="approved-papers" element={<ApprovedPapers />} /> {/* /admin/approved-papers */}
+          <Route path="/admin" element={<AdminDashboard />}> {/* AdminLayout will be the parent for all admin pages */}
+            {/* <Route path="dashboard" element={<AdminDashboard />} /> /admin/dashboard */}
             {/* Add other admin-specific routes here */}
           </Route>
         </Route>
         {/* --- END ADMIN PROTECTED ROUTES --- */}
-
          {/* Catch-all route for 404 - Optional */}
         <Route path="*" element={<div>404 - Page Not Found</div>} />
-
       </Routes>
 
       {showHeaderFooter && <Footer />}

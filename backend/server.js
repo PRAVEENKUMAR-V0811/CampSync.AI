@@ -10,6 +10,7 @@ const interviewRoutes = require('./routes/interviewRoutes');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const fs = require('fs'); // For uploads folder
+const adminRoutes = require('./routes/adminRoutes')
 
 // Ensure 'uploads' folder exists
 const uploadDir = path.join(__dirname, 'uploads');
@@ -40,6 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/question-papers', questionPaperRoutes);
 app.use('/api/admin/question-papers', questionPaperRoutes);
 app.use('/api/experiences', interviewRoutes);
+app.use('/api/admin', adminRoutes); // <--- ADD THIS
 
 
 // ===== LLM INTERVIEW BOT LOGIC =====
