@@ -1,30 +1,30 @@
-// src/components/PlacementTrendDashboard.jsx
+// src/pages/PlacementTrends/PlacementTrendDashboard.jsx
 import React, { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import placementData from './Data/placementData';
-import Footer from '../../components/Footer';
+import { API_BASE_URL } from '../../api';
 import CompanyScroller from '../CompanyScroller';
 
-// Custom tooltip for Recharts - enhanced to show company list
+// Custom tooltip for Recharts - shows company list on hover
 const CustomTooltip = ({ active, payload, label, unit, dataKey }) => {
   if (active && payload && payload.length) {
-    const data = payload[0].payload; // Access the full data object for the hovered point
+    const data = payload[0].payload;
     return (
-      <div className="p-3 bg-white border border-gray-300 rounded shadow-lg text-sm">
-        <p className="font-bold mb-1">{label}</p>
+      <div className="p-3 bg-white border border-gray-300 rounded shadow-lg text-sm z-50">
+        <p className="font-bold mb-1 text-gray-800">{label}</p>
         {payload.map((p, index) => (
           <p key={index} style={{ color: p.color }}>
             {p.name}: <span className="font-semibold">{p.value}{unit || ''}</span>
           </p>
         ))}
-        {/* Specifically for Month-wise Company Visits, show the list of companies */}
+        {/* If we are hovering over "Companies Visited", show the names of those companies */}
         {dataKey === "companiesVisited" && data.companiesList && data.companiesList.length > 0 && (
           <div className="mt-2 pt-2 border-t border-gray-200">
-            <p className="font-semibold text-gray-700">Companies:</p>
-            <ul className="list-disc list-inside text-gray-600">
+            <p className="font-semibold text-gray-700">Recruiters:</p>
+            <ul className="list-disc list-inside text-gray-600 max-h-32 overflow-y-auto">
               {data.companiesList.map((company, index) => (
                 <li key={index}>{company}</li>
               ))}
@@ -38,321 +38,285 @@ const CustomTooltip = ({ active, payload, label, unit, dataKey }) => {
 };
 
 const PlacementTrendDashboard = () => {
-  // Set default year to 2025
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [rawPlacements, setRawPlacements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedDepartment, setSelectedDepartment] = useState('All');
 
-  // Dynamically extract unique years from data, including 2025 as a default option if it exists
-  const allYears = useMemo(() => {
-    const years = new Set(placementData.map(d => d.year));
-    return ['All', ...Array.from(years).sort((a, b) => a - b)];
+  const allDepartments = ['All', 'CSE', 'CSE AIML', 'CSE IoT', 'CSE Cyber Security', 'AIDS', 'IT', 'EEE', 'ECE', 'CIVIL', 'MECHANICAL'];
+
+  // 1. Fetch all student records from the DB
+  useEffect(() => {
+    const fetchPlacements = async () => {
+      try {
+        setLoading(true);
+        // This endpoint fetches all records from the 'placements' collection
+        const { data } = await axios.get(`${API_BASE_URL}/api/placements/all-placements`);
+        setRawPlacements(data);
+      } catch (error) {
+        console.error("Error fetching placement analytics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlacements();
   }, []);
 
-  // Use the exact department list provided
-  const allDepartments = useMemo(() => ([
-    'All', 'CSE', 'CSE AIML', 'CSE IoT', 'CSE Cyber Security', 'AIDS', 'IT', 'EEE', 'ECE', 'CIVIL', 'MECHANICAL'
-  ]), []);
-
-  // Filtered data based on selections
-  const filteredData = useMemo(() => {
-    return placementData.filter(item =>
-      (selectedYear === 'All' || item.year === parseInt(selectedYear)) &&
+  // 2. Filter raw data based on User UI selections
+  const filteredRecords = useMemo(() => {
+    return rawPlacements.filter(item =>
+      (selectedYear === 'All' || item.year.toString() === selectedYear) &&
       (selectedDepartment === 'All' || item.department === selectedDepartment)
     );
-  }, [selectedYear, selectedDepartment]);
+  }, [rawPlacements, selectedYear, selectedDepartment]);
 
-  // --- Data Transformations for Charts and Summary Cards ---
+  // Dynamically get years available in the DB for the dropdown
+  const allYears = useMemo(() => {
+    const years = new Set(rawPlacements.map(d => d.year.toString()));
+    return ['All', ...Array.from(years).sort((a, b) => b - a)];
+  }, [rawPlacements]);
 
-  // Summary Cards Data
+  // 3. --- AGGREGATION LOGIC (Transforming DB rows into Chart Data) ---
+
+  // A. Summary Cards Calculation
   const summaryData = useMemo(() => {
-    const totalCompaniesVisited = new Set(filteredData.map(d => d.company)).size;
-    const totalStudentsHired = filteredData.reduce((sum, d) => sum + d.studentsHired, 0);
+    const placedOnes = filteredRecords.filter(r => r.status === 'Placed');
+    const companies = new Set(placedOnes.map(r => r.company));
+    const packages = placedOnes.map(r => r.lpa).filter(l => l > 0);
 
-    const validAvgPackages = filteredData.filter(d => d.avgPackage > 0).map(d => d.avgPackage);
-    const avgPackage = validAvgPackages.length > 0
-      ? (validAvgPackages.reduce((sum, d) => sum + d, 0) / validAvgPackages.length).toFixed(2)
-      : 0;
+    return {
+      totalCompanies: companies.size,
+      totalPlaced: placedOnes.length,
+      avgLPA: packages.length ? (packages.reduce((a, b) => a + b, 0) / packages.length).toFixed(2) : 0,
+      highestLPA: packages.length ? Math.max(...packages).toFixed(2) : 0
+    };
+  }, [filteredRecords]);
 
-    const validMaxPackages = filteredData.filter(d => d.maxPackage > 0).map(d => d.maxPackage);
-    const highestPackage = validMaxPackages.length > 0
-      ? Math.max(...validMaxPackages).toFixed(2)
-      : 0;
-
-    return { totalCompaniesVisited, totalStudentsHired, avgPackage, highestPackage };
-  }, [filteredData]);
-
-  // Month-wise Company Visits & Students Hired & Average Salary Trend (Combined for efficiency)
+  // B. Monthly Aggregation (Group by Month of Creation)
   const monthWiseData = useMemo(() => {
-    const dataMap = filteredData.reduce((acc, item) => {
-      const key = `${item.year}-${item.month}`;
-      if (!acc[key]) {
-        acc[key] = {
-          month: item.month,
-          companiesList: new Set(), // To store individual company names
-          studentsHired: 0,
-          avgPackageSum: 0,
-          avgPackageCount: 0,
-          year: item.year
-        };
-      }
-      acc[key].companiesList.add(item.company);
-      acc[key].studentsHired += item.studentsHired;
-      acc[key].avgPackageSum += item.avgPackage;
-      acc[key].avgPackageCount++;
-      return acc;
-    }, {});
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    // Initialize empty months
+    const stats = monthNames.map(name => ({
+      monthYear: name,
+      companiesList: new Set(),
+      studentsHired: 0,
+      lpaSum: 0,
+      lpaCount: 0
+    }));
 
-    const orderedMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    filteredRecords.forEach(record => {
+      // Use DB timestamp to determine the month
+      const date = new Date(record.createdAt);
+      const mIdx = date.getMonth(); 
 
-    // Group by year first, then by month
-    const yearlyGrouped = Object.values(dataMap).reduce((acc, item) => {
-        if (!acc[item.year]) {
-            acc[item.year] = [];
+      if (record.status === 'Placed') {
+        stats[mIdx].studentsHired += 1;
+        stats[mIdx].companiesList.add(record.company);
+        if (record.lpa > 0) {
+          stats[mIdx].lpaSum += record.lpa;
+          stats[mIdx].lpaCount += 1;
         }
-        acc[item.year].push(item);
-        return acc;
-    }, {});
-
-    // Sort months within each year and flatten
-    const sortedData = Object.keys(yearlyGrouped).sort((a, b) => a - b).flatMap(year => {
-        return yearlyGrouped[year].sort((a, b) => orderedMonths.indexOf(a.month) - orderedMonths.indexOf(b.month))
-            .map(item => ({
-                monthYear: `${item.month.substring(0, 3)} ${item.year}`, // For display on X-axis
-                companiesVisited: item.companiesList.size,
-                companiesList: Array.from(item.companiesList), // Convert Set to Array for tooltip
-                studentsHired: item.studentsHired,
-                averagePackage: item.avgPackageCount > 0 ? parseFloat((item.avgPackageSum / item.avgPackageCount).toFixed(2)) : 0
-            }));
+      }
     });
 
-    return sortedData;
-  }, [filteredData]);
-
-  // Department-wise Hiring Distribution
-  const departmentHiringData = useMemo(() => {
-    const dataMap = filteredData.reduce((acc, item) => {
-      acc[item.department] = (acc[item.department] || 0) + item.studentsHired;
-      return acc;
-    }, {});
-    return Object.keys(dataMap).map(department => ({
-      name: department,
-      value: dataMap[department],
+    return stats.map(item => ({
+      ...item,
+      companiesVisited: item.companiesList.size,
+      companiesList: Array.from(item.companiesList),
+      averagePackage: item.lpaCount > 0 ? parseFloat((item.lpaSum / item.lpaCount).toFixed(2)) : 0
     }));
-  }, [filteredData]);
+  }, [filteredRecords]);
 
-  const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c', '#8dd1e1'];
+  // C. Department distribution for Pie Chart
+  const deptData = useMemo(() => {
+    const map = {};
+    filteredRecords.forEach(r => {
+      if (r.status === 'Placed') {
+        map[r.department] = (map[r.department] || 0) + 1;
+      }
+    });
+    return Object.keys(map).map(dept => ({ name: dept, value: map[dept] }));
+  }, [filteredRecords]);
 
-  // Top Hiring Companies
-  const topHiringCompanies = useMemo(() => {
-    const dataMap = filteredData.reduce((acc, item) => {
-      acc[item.company] = (acc[item.company] || 0) + item.studentsHired;
-      return acc;
-    }, {});
-    return Object.keys(dataMap)
-      .map(company => ({ name: company, studentsHired: dataMap[company] }))
+  // D. Top 5 Companies Horizontal Bar Chart
+  const topCompanies = useMemo(() => {
+    const map = {};
+    filteredRecords.forEach(r => {
+      if (r.status === 'Placed') {
+        map[r.company] = (map[r.company] || 0) + 1;
+      }
+    });
+    return Object.keys(map)
+      .map(name => ({ name, studentsHired: map[name] }))
       .sort((a, b) => b.studentsHired - a.studentsHired)
-      .slice(0, 5); // Top 5
-  }, [filteredData]);
+      .slice(0, 5);
+  }, [filteredRecords]);
 
+  const PIE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Fetching Live Placement Trends...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8 pb-40">
-      <h1 className="text-2xl font-bold text-gray-800 p-10">Placement Trend Dashboard</h1>
-      {/* Company Scroller Effect */}
-      {/* <CompanyScroller direction="ltr" speed="medium" /> */}
-      {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-4">
-        <div className="flex items-center space-x-2">
-          <label htmlFor="year-filter" className="font-medium text-gray-700">Year:</label>
-          <select
-            id="year-filter"
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            {allYears.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
-        </div>
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Placement Analytics</h1>
+        <p className="text-gray-500 mb-8 font-medium italic">Showing dynamic trends based on faculty-updated student records.</p>
 
-        <div className="flex items-center space-x-2">
-          <label htmlFor="department-filter" className="font-medium text-gray-700">Department:</label>
-          <select
-            id="department-filter"
-            value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            {allDepartments.map(department => (
-              <option key={department} value={department}>{department}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-          <p className="text-sm font-medium text-gray-500">Total Companies Visited</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{summaryData.totalCompaniesVisited}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
-          <p className="text-sm font-medium text-gray-500">Total Students Hired</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{summaryData.totalStudentsHired}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-500">
-          <p className="text-sm font-medium text-gray-500">Average Package (LPA)</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">₹{summaryData.avgPackage}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
-          <p className="text-sm font-medium text-gray-500">Highest Package (LPA)</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">₹{summaryData.highestPackage}</p>
-        </div>
-      </div>
-
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Month-wise Company Visits */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Month-wise Company Visits</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={monthWiseData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        {/* Filters Row */}
+        <div className="flex flex-wrap gap-4 mb-8 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+          <div className="flex items-center space-x-3">
+            <label className="text-sm font-bold text-gray-600 uppercase tracking-wider">Batch Year</label>
+            <select 
+              value={selectedYear} 
+              onChange={(e) => setSelectedYear(e.target.value)} 
+              className="p-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis dataKey="monthYear" angle={-45} textAnchor="end" height={60} interval={0} />
-              <YAxis />
-              {/* Pass dataKey to CustomTooltip to conditionally render company list */}
-              <Tooltip content={<CustomTooltip unit=" companies" dataKey="companiesVisited" />} />
-              <Legend />
-              <Bar dataKey="companiesVisited" fill="#8884d8" name="Companies Visited" animationDuration={1000} />
+              {allYears.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center space-x-3">
+            <label className="text-sm font-bold text-gray-600 uppercase tracking-wider">Department</label>
+            <select 
+              value={selectedDepartment} 
+              onChange={(e) => setSelectedDepartment(e.target.value)} 
+              className="p-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            >
+              {allDepartments.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard title="Companies Visited" count={summaryData.totalCompanies} icon="🏢" color="border-blue-500" />
+          <StatCard title="Students Placed" count={summaryData.totalPlaced} icon="🎓" color="border-green-500" />
+          <StatCard title="Average Package" count={`₹${summaryData.avgLPA} LPA`} icon="📈" color="border-yellow-500" />
+          <StatCard title="Highest Package" count={`₹${summaryData.highestLPA} LPA`} icon="🏆" color="border-red-500" />
+        </div>
+
+        {/* Chart Rows */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <ChartWrapper title="Monthly Recruitment Activity">
+            <BarChart data={monthWiseData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="monthYear" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+              <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+              <Tooltip cursor={{fill: '#f8fafc'}} content={<CustomTooltip unit=" companies" dataKey="companiesVisited" />} />
+              <Bar dataKey="companiesVisited" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={35} />
             </BarChart>
-          </ResponsiveContainer>
-        </div>
+          </ChartWrapper>
 
-        {/* Month-wise Students Hired */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Month-wise Students Hired</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart
-              data={monthWiseData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis dataKey="monthYear" angle={-45} textAnchor="end" height={60} interval={0} />
-              <YAxis />
+          <ChartWrapper title="Hiring Pace (Students Per Month)">
+            <LineChart data={monthWiseData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="monthYear" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+              <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
               <Tooltip content={<CustomTooltip unit=" students" />} />
-              <Legend />
-              <Line type="monotone" dataKey="studentsHired" stroke="#82ca9d" name="Students Hired" activeDot={{ r: 8 }} animationDuration={1000} />
+              <Line type="monotone" dataKey="studentsHired" stroke="#10b981" strokeWidth={3} dot={{ r: 6, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
             </LineChart>
-          </ResponsiveContainer>
+          </ChartWrapper>
         </div>
-      </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
-              <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Average Salary Trend (LPA)</h2>
-                  <ResponsiveContainer width="100%" height={300}>
-                      <AreaChart
-                          data={monthWiseData}
-                          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                      >
-                          <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                          <XAxis dataKey="monthYear" angle={-45} textAnchor="end" height={60} interval={0} />
-                          <YAxis />
-                          <Tooltip content={<CustomTooltip unit=" LPA" />} />
-                          <Area type="monotone" dataKey="averagePackage" stroke="#ffc658" fill="#ffc658" name="Avg. Package" animationDuration={1000} />
-                      </AreaChart>
-                  </ResponsiveContainer>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <ChartWrapper title="Salary Progression (LPA Trend)">
+            <AreaChart data={monthWiseData}>
+              <defs>
+                <linearGradient id="colorLpa" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="monthYear" axisLine={false} tickLine={false} />
+              <YAxis axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip unit=" LPA" />} />
+              <Area type="monotone" dataKey="averagePackage" stroke="#f59e0b" fillOpacity={1} fill="url(#colorLpa)" strokeWidth={3} />
+            </AreaChart>
+          </ChartWrapper>
 
-              <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Companies</h2>
-                      <CompanyScroller direction="ltr" speed="medium" />
-                      <CompanyScroller direction="rtl" speed="medium" />
-              </div>
-      </div>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+             <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center">
+               <span className="w-2 h-6 bg-blue-600 rounded-full mr-3"></span>
+               Our Recruiting Partners
+             </h2>
+             <div className="space-y-6">
+               <CompanyScroller direction="ltr" speed="medium" />
+               <CompanyScroller direction="rtl" speed="medium" />
+             </div>
+          </div>
+        </div>
 
-      {/* Row 3: Average Salary Trend
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Average Salary Trend (LPA)</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart
-            data={monthWiseData}
-            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-            <XAxis dataKey="monthYear" angle={-45} textAnchor="end" height={60} interval={0} />
-            <YAxis />
-            <Tooltip content={<CustomTooltip unit=" LPA" />} />
-            <Area type="monotone" dataKey="averagePackage" stroke="#ffc658" fill="#ffc658" name="Avg. Package" animationDuration={1000} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Companies</h2>
-                      <CompanyScroller direction="ltr" speed="medium" />
-                      <CompanyScroller direction="rtl" speed="medium" />
-      </div> */}
-
-      {/* Row 4: Department-wise Hiring Distribution & Top Hiring Companies */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Department-wise Hiring Distribution (Pie Chart) */}
-        <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Department-wise Hiring Distribution</h2>
-          <ResponsiveContainer width="100%" height={300}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <ChartWrapper title="Placement Distribution by Department">
             <PieChart>
               <Pie
-                data={departmentHiringData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={100}
-                fill="#8884d8"
+                data={deptData}
                 dataKey="value"
                 nameKey="name"
-                animationDuration={1000}
+                cx="50%" cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={5}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
-                {departmentHiringData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
+                {deptData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
               </Pie>
-              <Tooltip content={<CustomTooltip unit=" students" />} />
-              <Legend />
+              <Tooltip />
+              <Legend verticalAlign="bottom" height={36}/>
             </PieChart>
-          </ResponsiveContainer>
-        </div>
+          </ChartWrapper>
 
-        {/* Top Hiring Companies (Horizontal Bar Chart) */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Top Hiring Companies (Students Hired)</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={topHiringCompanies}
-              layout="vertical"
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis type="number" />
-              <YAxis dataKey="name" type="category" width={100} />
-              <Tooltip content={<CustomTooltip unit=" students" />} />
-              <Legend />
-              <Bar dataKey="studentsHired" fill="#FF8042" name="Students Hired" animationDuration={1000} />
+          <ChartWrapper title="Top Hiring Entities">
+            <BarChart data={topCompanies} layout="vertical" margin={{ left: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+              <XAxis type="number" hide />
+              <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={100} style={{fontSize: '12px', fontWeight: 'bold'}} />
+              <Tooltip cursor={{fill: '#f8fafc'}} />
+              <Bar dataKey="studentsHired" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={25} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartWrapper>
         </div>
       </div>
-      <div>
-          <CompanyScroller direction="ltr" speed="medium" />
-          {/* <CompanyScroller direction="rtl" speed="medium" />
-          <CompanyScroller direction="ltr" speed="medium" /> */}
-        </div>
     </div>
   );
 };
+
+// --- Styled Sub-Components ---
+
+const StatCard = ({ title, count, icon, color }) => (
+  <div className={`bg-white p-6 rounded-2xl shadow-sm border-l-8 ${color} transition-transform hover:scale-[1.02] duration-300`}>
+    <div className="flex justify-between items-start">
+      <div>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{title}</p>
+        <p className="text-2xl font-black text-gray-900">{count}</p>
+      </div>
+      <span className="text-2xl bg-gray-50 p-2 rounded-lg">{icon}</span>
+    </div>
+  </div>
+);
+
+const ChartWrapper = ({ title, children }) => (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+    <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center">
+      <span className="w-2 h-6 bg-blue-600 rounded-full mr-3"></span>
+      {title}
+    </h2>
+    <div className="h-[300px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        {children}
+      </ResponsiveContainer>
+    </div>
+  </div>
+);
 
 export default PlacementTrendDashboard;

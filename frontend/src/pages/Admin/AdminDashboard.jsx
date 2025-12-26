@@ -4,6 +4,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast'; 
 import AuthContext from '../Auth/AuthContext';
 import { API_BASE_URL } from '../../api';
+import PlacementManager from '../PlacementTrends/PlacementManager';
 
 // --- Inline Icons (Updated with Feedback Icon) ---
 const Icons = {
@@ -19,7 +20,9 @@ const Icons = {
   Warning: () => <svg className="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>,
   SuccessBig: () => <svg className="w-16 h-16 text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>,
   TrashBig: () => <svg className="w-16 h-16 text-red-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>,
-  Feedback: () => <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+  Feedback: () => <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>,
+  Student: () => <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>,
+  Plus: () => <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
 };
 
 const AdminDashboard = () => {
@@ -27,6 +30,10 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState({ userCount: 0, totalDocs: 0, approvedDocs: 0, rejectedDocs: 0, pendingDocs: 0 });
   const [loadingStats, setLoadingStats] = useState(false);
+
+  const [placementStats, setPlacementStats] = useState({
+  totalStudents: 0, placedCount: 0, unplacedCount: 0, highestLPA: 0, lowestLPA: 0, avgLPA: 0
+});
 
   const getAuthConfig = () => ({
     headers: { Authorization: `Bearer ${user?.token}` }
@@ -50,6 +57,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchPlacementStats = async () => {
+  try {
+    const { data } = await axios.get(`${API_BASE_URL}/api/placements/faculty-stats`, getAuthConfig());
+    setPlacementStats(data);
+  } catch (err) { console.error(err); }
+  };
+
+  useEffect(() => {
+    if (user?.token) {
+      fetchStats();
+      fetchPlacementStats();
+    }
+  }, [user]);
+
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
       
@@ -64,6 +85,7 @@ const AdminDashboard = () => {
           <SidebarItem label="Pending Papers" icon={<Icons.Pending />} active={activeTab === 'Pending'} onClick={() => setActiveTab('Pending')} badge={stats.pendingDocs} />
           <SidebarItem label="Approved Papers" icon={<Icons.CheckCircle />} active={activeTab === 'Approved'} onClick={() => setActiveTab('Approved')} />
           <SidebarItem label="Rejected Papers" icon={<Icons.XCircle />} active={activeTab === 'Rejected'} onClick={() => setActiveTab('Rejected')} />
+          <SidebarItem label="Manage Placements" icon={<Icons.Student />} active={activeTab === 'placements'} onClick={() => setActiveTab('placements')} />
           
           {/* --- NEW FEEDBACK ITEM --- */}
           <div className="pt-4 mt-4 border-t border-slate-700">
@@ -81,22 +103,24 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-8 overflow-y-auto min-h-screen">
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-800 capitalize">
-              {activeTab === 'dashboard' ? 'Dashboard Overview' : 
-               activeTab === 'feedback' ? 'User Feedback' : 
-               `${activeTab} Documents`}
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Welcome back, <span className="font-semibold text-blue-600">{user?.name || 'Admin'}</span>
-            </p>
-          </div>
-        </header>
+      <main className="flex-1 ml-64 p-8 overflow-y-auto">
+      {activeTab === 'dashboard' ? (
+        <>
+          <h3 className="text-xl font-bold mb-4 text-gray-700">System Overview</h3>
+          <DashboardStats stats={stats} loading={loadingStats} />
 
-        {activeTab === 'dashboard' ? (
-           <DashboardStats stats={stats} loading={loadingStats} />
+          <h3 className="text-xl font-bold mt-10 mb-4 text-gray-700">My Students Placement Stats</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <StatCard title="My Students" count={placementStats.totalStudents} color="border-l-indigo-500" />
+            <StatCard title="Placed" count={placementStats.placedCount} color="border-l-green-500" />
+            <StatCard title="Non-Placed" count={placementStats.unplacedCount} color="border-l-orange-500" />
+            <StatCard title="Highest LPA" count={`₹${placementStats.highestLPA}`} color="border-l-yellow-500" />
+            <StatCard title="Lowest LPA" count={`₹${placementStats.lowestLPA}`} color="border-l-red-500" />
+            <StatCard title="Avg LPA" count={`₹${placementStats.avgLPA}`} color="border-l-blue-500" />
+          </div>
+        </>
+        ) : activeTab === 'placements' ? (
+          <PlacementManager getAuthConfig={getAuthConfig} refreshStats={fetchPlacementStats} />
         ) : activeTab === 'feedback' ? (
            // --- RENDER FEEDBACK LIST ---
            <FeedbackList getAuthConfig={getAuthConfig} />

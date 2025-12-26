@@ -12,6 +12,7 @@ const path = require('path');
 const fs = require('fs'); // For uploads folder
 const adminRoutes = require('./routes/adminRoutes')
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const placementRoutes = require('./routes/placementRoutes');
 
 // Ensure 'uploads' folder exists
 const uploadDir = path.join(__dirname, 'uploads');
@@ -45,6 +46,7 @@ app.use('/api/question-papers', questionPaperRoutes);
 app.use('/api/admin/question-papers', questionPaperRoutes);
 app.use('/api/experiences', interviewRoutes);
 app.use('/api/admin', adminRoutes); // <--- ADD THIS
+app.use('/api/placements', placementRoutes); // Placement routes
 
 
 // ===== LLM INTERVIEW BOT LOGIC =====
