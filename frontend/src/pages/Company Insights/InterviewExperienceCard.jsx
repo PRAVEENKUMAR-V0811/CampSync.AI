@@ -1,147 +1,13 @@
-// // src/components/InterviewExperienceCard.jsx
-// import React from 'react';
-// import { format } from 'date-fns';
-
-// const InterviewExperienceCard = ({ experience }) => {
-//   const {
-//     name, anonymous, passOutYear, department, yearOfStudy,
-//     companyName, interviewType, role, package: experiencePackage,
-//     focusSkills, roundsFaced, otherRound, unexpectedQuestions,
-//     codingQuestions, interviewTopics, comfortLevel, outcome,
-//     feedback, resources, features, experienceRating, additionalComments,
-//     createdAt
-//   } = experience;
-
-//   const displayRounds = roundsFaced.includes("Other") ? [...roundsFaced.filter(r => r !== "Other"), otherRound] : roundsFaced;
-
-//   return (
-//     <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border border-gray-100 transition-all duration-300 hover:shadow-xl">
-//       <div className="flex justify-between items-start mb-4">
-//         <h2 className="text-2xl font-bold text-indigo-700">
-//           {companyName} - {role}
-//         </h2>
-//         <span className="text-sm text-gray-500">
-//           {format(new Date(createdAt), 'MMM dd, yyyy')}
-//         </span>
-//       </div>
-
-//       <p className="text-gray-700 mb-2">
-//         <span className="font-semibold">Candidate:</span>{" "}
-//         {anonymous === "Yes" ? "Anonymous" : name} ({department}, {yearOfStudy} - {passOutYear})
-//       </p>
-//       <p className="text-gray-700 mb-2">
-//         <span className="font-semibold">Interview Type:</span> {interviewType}
-//       </p>
-//       {experiencePackage && (
-//         <p className="text-gray-700 mb-2">
-//           <span className="font-semibold">Package:</span> {experiencePackage}
-//         </p>
-//       )}
-
-//       <div className="mt-4 border-t border-gray-200 pt-4">
-//         <h3 className="text-xl font-semibold text-gray-800 mb-3">Experience Details:</h3>
-
-//         <div className="mb-3">
-//           <p className="font-semibold text-gray-700">Focus Skills:</p>
-//           <p className="text-gray-600">{focusSkills}</p>
-//         </div>
-
-//         <div className="mb-3">
-//           <p className="font-semibold text-gray-700">Rounds Faced:</p>
-//           <div className="flex flex-wrap gap-2">
-//             {displayRounds.map((round, index) => (
-//               <span key={index} className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-//                 {round}
-//               </span>
-//             ))}
-//           </div>
-//         </div>
-
-//         <div className="mb-3">
-//           <p className="font-semibold text-gray-700">Unexpected Questions/Rounds:</p>
-//           <p className="text-gray-600">{unexpectedQuestions}</p>
-//         </div>
-
-//         <div className="mb-3">
-//           <p className="font-semibold text-gray-700">Coding Questions/Topics:</p>
-//           <p className="text-gray-600">{codingQuestions}</p>
-//         </div>
-
-//         <div className="mb-3">
-//           <p className="font-semibold text-gray-700">Interview Topics/Questions:</p>
-//           <p className="text-gray-600">{interviewTopics}</p>
-//         </div>
-
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 mb-3">
-//           <div>
-//             <p className="font-semibold text-gray-700">Comfort Level:</p>
-//             <p className="text-gray-600">{comfortLevel}</p>
-//           </div>
-//           <div>
-//             <p className="font-semibold text-gray-700">Outcome:</p>
-//             <p className="text-gray-600">{outcome}</p>
-//           </div>
-//         </div>
-
-//         {feedback && (
-//           <div className="mb-3">
-//             <p className="font-semibold text-gray-700">Feedback (if rejected):</p>
-//             <p className="text-gray-600">{feedback}</p>
-//           </div>
-//         )}
-
-//         {resources && (
-//           <div className="mb-3">
-//             <p className="font-semibold text-gray-700">Recommended Resources/Strategies:</p>
-//             <p className="text-gray-600">{resources}</p>
-//           </div>
-//         )}
-
-//         <div className="mb-3">
-//           <p className="font-semibold text-gray-700">Desired Platform Features:</p>
-//           <p className="text-gray-600">{features}</p>
-//         </div>
-
-//         <div className="mb-3">
-//           <p className="font-semibold text-gray-700">Overall Experience Rating:</p>
-//           <div className="flex items-center">
-//             {Array.from({ length: 5 }).map((_, i) => (
-//               <svg
-//                 key={i}
-//                 className={`w-5 h-5 ${i < experienceRating ? 'text-yellow-400' : 'text-gray-300'}`}
-//                 fill="currentColor"
-//                 viewBox="0 0 20 20"
-//               >
-//                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-//               </svg>
-//             ))}
-//             <span className="ml-2 text-gray-700 font-bold">{experienceRating}/5</span>
-//           </div>
-//         </div>
-
-//         {additionalComments && (
-//           <div className="mb-3">
-//             <p className="font-semibold text-gray-700">Additional Comments:</p>
-//             <p className="text-gray-600">{additionalComments}</p>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default InterviewExperienceCard;
-
-// src/components/InterviewExperienceCard.jsx
 import React from 'react';
 import { format } from 'date-fns';
 import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { Calendar, User, Target, TrendingUp, ChevronRight, Star } from 'lucide-react';
 
-const InterviewExperienceCard = ({ experience, onVote }) => { // onVote prop added
+const InterviewExperienceCard = ({ experience, onVote }) => {
   const navigate = useNavigate();
   const {
-    _id, // Important for navigation and voting
+    _id,
     name, anonymous, department, yearOfStudy, passOutYear,
     companyName, interviewType, role, package: experiencePackage,
     outcome, experienceRating, createdAt, votes
@@ -152,73 +18,105 @@ const InterviewExperienceCard = ({ experience, onVote }) => { // onVote prop add
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 transition-all duration-300 hover:shadow-lg">
-      <div className="flex justify-between items-start mb-3">
-        <h2 className="text-2xl font-bold text-indigo-700 flex-1 pr-4">
-          {companyName} - {role}
-        </h2>
-        <span className="text-sm text-gray-500 flex-shrink-0">
-          {format(new Date(createdAt), 'MMM dd, yyyy')}
-        </span>
-      </div>
-
-      <p className="text-gray-700 mb-1">
-        <span className="font-semibold">Candidate:</span>{" "}
-        {anonymous === "Yes" ? "Anonymous" : name} ({department}, {yearOfStudy} - {passOutYear})
-      </p>
-      <p className="text-gray-700 mb-1">
-        <span className="font-semibold">Interview Type:</span> {interviewType}
-      </p>
-      {experiencePackage && (
-        <p className="text-gray-700 mb-1">
-          <span className="font-semibold">Package:</span> {experiencePackage}
-        </p>
-      )}
-      <p className="text-gray-700 mb-3">
-        <span className="font-semibold">Outcome:</span> {outcome}
-      </p>
-
-      {/* Rating Display */}
-      <div className="flex items-center mb-4">
-        <p className="font-semibold text-gray-700 mr-2">Rating:</p>
-        <div className="flex items-center">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <svg
-              key={i}
-              className={`w-4 h-4 ${i < experienceRating ? 'text-yellow-400' : 'text-gray-300'}`}
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-          ))}
-          <span className="ml-2 text-gray-700 text-sm font-bold">{experienceRating}/5</span>
+    <div className="bg-white rounded-[32px] shadow-xl shadow-slate-200/50 border border-white p-6 md:p-8 flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group">
+      
+      {/* Card Header */}
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex-1">
+          <div className="inline-flex px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-2">
+            {interviewType}
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+            {companyName}
+          </h2>
+          <p className="text-slate-500 font-bold">{role}</p>
+        </div>
+        <div className="flex flex-col items-end">
+          <div className="flex items-center text-slate-400 text-xs font-medium mb-1">
+            <Calendar size={12} className="mr-1" />
+            {format(new Date(createdAt), 'MMM dd, yyyy')}
+          </div>
+          <div className={`text-[11px] font-black px-3 py-1 rounded-lg uppercase tracking-tighter shadow-sm ${
+            outcome?.toLowerCase() === 'selected' || outcome?.toLowerCase() === 'placed'
+            ? 'bg-emerald-500 text-white' 
+            : 'bg-slate-100 text-slate-500'
+          }`}>
+            {outcome}
+          </div>
         </div>
       </div>
 
-      {/* Voting and View More */}
-      <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-4">
-        <div className="flex items-center gap-4">
+      {/* Info Grid */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-slate-50/50 p-3 rounded-2xl border border-slate-50">
+          <div className="flex items-center text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <User size={12} className="mr-1" /> Candidate
+          </div>
+          <p className="text-xs font-black text-slate-700 truncate">
+            {anonymous === "Yes" ? "Anonymous Student" : name}
+          </p>
+        </div>
+        <div className="bg-slate-50/50 p-3 rounded-2xl border border-slate-50">
+          <div className="flex items-center text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <Target size={12} className="mr-1" /> Batch
+          </div>
+          <p className="text-xs font-black text-slate-700">
+             {department} • {passOutYear}
+          </p>
+        </div>
+      </div>
+
+      {/* Rating & Package Row */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              size={14}
+              className={`${i < experienceRating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-200'}`}
+            />
+          ))}
+          <span className="ml-1 text-slate-900 text-sm font-black">{experienceRating}/5</span>
+        </div>
+        
+        {experiencePackage && (
+          <div className="flex items-center text-indigo-600 font-black">
+            <span className="text-xs mr-1 text-slate-400 font-bold uppercase">Package:</span>
+            <span className="text-sm">{experiencePackage}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Footer Actions */}
+      <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+        <div className="flex items-center gap-6">
           <button
             onClick={() => onVote(_id, 'upvote')}
-            className="flex items-center text-green-600 hover:text-green-700 transition duration-200"
-            aria-label="Upvote"
+            className="flex items-center gap-2 text-slate-400 hover:text-emerald-600 transition-colors font-bold text-sm cursor-pointer group/btn"
           >
-            <FaThumbsUp className="mr-1" /> {votes?.upvotes || 0}
+            <div className="p-2 bg-slate-50 rounded-xl group-hover/btn:bg-emerald-50 transition-colors">
+              <FaThumbsUp />
+            </div>
+            <span>{votes?.upvotes || 0}</span>
           </button>
+          
           <button
             onClick={() => onVote(_id, 'downvote')}
-            className="flex items-center text-red-600 hover:text-red-700 transition duration-200"
-            aria-label="Downvote"
+            className="flex items-center gap-2 text-slate-400 hover:text-red-600 transition-colors font-bold text-sm cursor-pointer group/btn"
           >
-            <FaThumbsDown className="mr-1" /> {votes?.downvotes || 0}
+            <div className="p-2 bg-slate-50 rounded-xl group-hover/btn:bg-red-50 transition-colors">
+              <FaThumbsDown />
+            </div>
+            <span>{votes?.downvotes || 0}</span>
           </button>
         </div>
+
         <button
           onClick={handleViewMore}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition duration-300 shadow-sm"
+          className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 shadow-lg shadow-slate-200 transition-all active:scale-95 cursor-pointer"
         >
-          View More
+          <span>View More</span>
+          <ChevronRight size={14} />
         </button>
       </div>
     </div>

@@ -21,45 +21,33 @@ const generateToken = (id) => {
 // @route   POST /api/auth/signup
 // @access  Public
 router.post('/signup', async (req, res) => {
-  const { name, gender, email, password, phone, education, college, branch, passingYear } = req.body;
+  const { name, gender, email, password, phone, education, college, branch, passingYear, regNo, cgpa, historyOfArrear, currentBacklog, currentSemester } = req.body;
 
   try {
-    const userExists = await User.findOne({ $or: [{ email }, { phone }] });
-
-    if (userExists) {
-      return res.status(400).json({ message: 'User with that email or phone already exists' });
-    }
+    const userExists = await User.findOne({ $or: [{ email }, { phone }, { regNo }] });
+    if (userExists) return res.status(400).json({ message: 'User already exists' });
 
     const user = await User.create({
-      name,
-      gender,
-      email,
-      password, // hashed in pre-save hook
-      phone,
-      education,
-      college,
-      branch,
-      passingYear,
-      role: 'user', // Default role
+      name, gender, email, password, phone, education, college, branch, passingYear, regNo,
+      role: 'user',
+      // Store academic data as pending immediately
+      academicUpdatePending: true,
+      pendingData: {
+        cgpa: cgpa || 0,
+        historyOfArrear: historyOfArrear || 'No',
+        currentBacklog: currentBacklog || 0,
+        currentSemester: currentSemester || 1
+      }
     });
 
     if (user) {
-      res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      res.status(201).json({ _id: user._id, token: generateToken(user._id) });
     }
   } catch (error) {
-    console.error('Signup error:', error);
-    res.status(500).json({ message: 'Server error during signup' });
+    res.status(500).json({ message: 'Signup failed' });
   }
 });
+
 
 // @desc    Authenticate user & get token
 // @route   POST /api/auth/login
@@ -184,6 +172,7 @@ router.get('/profile', protect, async (req, res) => {
     res.json({
       _id: user._id,
       name: user.name,
+      regNo: user.regNo,
       gender: user.gender,
       email: user.email,
       phone: user.phone,
@@ -192,6 +181,21 @@ router.get('/profile', protect, async (req, res) => {
       branch: user.branch,
       passingYear: user.passingYear,
       role: user.role,
+      // --- ADD THESE FIELDS BELOW ---
+      cgpa: user.cgpa,
+      historyOfArrear: user.historyOfArrear,
+      currentBacklog: user.currentBacklog,
+      currentSemester: user.currentSemester,
+      academicUpdatePending: user.academicUpdatePending,
+      pendingData: user.pendingData,
+      
+      placementStatus: user.placementStatus,
+      recentCompany: user.recentCompany,
+      packageLPA: user.packageLPA,
+      jobType: user.jobType,
+      internStipend: user.internStipend,
+      offersCount: user.offersCount,
+      // ------------------------------
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });
@@ -199,4 +203,38 @@ router.get('/profile', protect, async (req, res) => {
     res.status(404).json({ message: 'User not found' });
   }
 });
+
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+router.put('/profile', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // 1. Update Basic Info immediately
+    user.name = req.body.name || user.name;
+    user.gender = req.body.gender || user.gender;
+    user.education = req.body.education || user.education;
+    user.college = req.body.college || user.college;
+    user.branch = req.body.branch || user.branch;
+
+    // 2. Move Academic Info to Pending (Match your schema: pendingData)
+    if (req.body.cgpa !== undefined || req.body.currentSemester !== undefined) {
+      user.academicUpdatePending = true;
+      user.pendingData = {
+        cgpa: req.body.cgpa || user.cgpa,
+        historyOfArrear: req.body.historyOfArrear || user.historyOfArrear,
+        currentBacklog: req.body.currentBacklog || user.currentBacklog,
+        currentSemester: req.body.currentSemester || user.currentSemester
+      };
+    }
+
+    const updatedUser = await user.save();
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating profile' });
+  }
+});
+
 module.exports = router;

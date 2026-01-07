@@ -1,8 +1,8 @@
 import React from 'react';
 import { FaRobot, FaChartLine, FaBuilding, FaBookOpen, FaUserGraduate, FaLightbulb } from "react-icons/fa";
-import HeroImg from "../assets/heroimg.png"; // Assuming this is a good, relevant hero image
+import HeroImg from "../assets/heroimg.png"; 
 import campsyncPromoVideo from "../assets/Videos/CampSync.AI Promo.mp4";
-import logo from "../assets/logo2.png"; // Assuming you have a logo image
+import logo from "../assets/logo2.png"; 
 import { useNavigate, Link } from 'react-router-dom';
 import CompanyScroller from './CompanyScroller';
 import FAQSection from '../components/FAQSection';
@@ -13,170 +13,197 @@ const LandingPage = () => {
     const navigate = useNavigate();
 
     const handleCTA = () => {
-      navigate("/signup"); // Changed to signup for consistency with the CTA button
+      navigate("/signup");
     };
 
-    const handleContact = () => {
-      navigate("/contact");
-    };
+    return (
+        // Added pt-24 to prevent content from being hidden under the fixed header
+        <div className="w-full min-h-screen bg-slate-50 pt-24 overflow-x-hidden">
+            
+            {/* Main Content Wrapper */}
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-    const handleHome = () => {
-      navigate("/");
-    };
+                {/* Hero Section */}
+                <section className="flex flex-col md:flex-row items-center justify-between py-12 md:py-20 gap-10">
+                    <div className="w-full md:w-1/2 text-center md:text-left space-y-6">
+                        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 leading-[1.1]">
+                            Your Future Starts Here.{" "}
+                            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-emerald-500 to-indigo-600 bg-[length:200%_200%] animate-text-shine">
+                                Powered by AI.
+                            </span>
+                        </h1>
+                        <p className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto md:mx-0 leading-relaxed">
+                            CampSync.AI empowers students and alumni with intelligent tools 
+                            <span className="block font-semibold text-emerald-600 mt-1">for campus placements and academic excellence.</span>
+                        </p>
+                        <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start pt-4">
+                            <button
+                                className="w-full sm:w-auto bg-gray-900 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-indigo-600 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                                onClick={handleCTA}
+                            >
+                                Get Started Free
+                            </button>
+                            <button 
+                                onClick={() => document.getElementById('features').scrollIntoView({behavior: 'smooth'})}
+                                className="w-full sm:w-auto px-10 py-4 rounded-xl font-bold text-lg border-2 border-gray-200 hover:border-indigo-600 transition-all cursor-pointer"
+                            >
+                                Learn More
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="w-full md:w-1/2 relative group">
+                        <div className="absolute -inset-4 bg-gradient-to-r from-indigo-100 to-emerald-100 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition duration-1000"></div>
+                        <img
+                            src={HeroImg}
+                            alt="CampSync.AI Hero"
+                            className="relative w-full h-115  mx-auto rounded-3xl shadow-2xl transform transition duration-500 group-hover:scale-[1.02]"
+                        />
+                    </div>
+                </section>
 
-  return (
-    <div className="w-full min-h-screen bg-white">
-      {/* Container for main content, with responsive padding */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="flex justify-center pb-12 cursor-pointer">
+                    <ScrollDownButton targetId="promotional-video" />
+                </div>
 
-        {/* Hero Section */}
-        <section className="flex flex-col md:flex-row items-center justify-between py-16 md:py-24">
-          <div className="w-full md:w-1/2 pr-0 md:pr-8 mb-12 md:mb-0 text-center md:text-left">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight">
-              Your Future Starts Here.{" "}<br className="hidden sm:inline" />
-              <span className="text-transparent bg-clip-text bg-[radial-gradient(circle,_#7182ff_0%,_#3cff52_100%)] bg-[length:200%_200%] animate-text-shine">
-                Powered by AI.
-              </span>
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-700 mb-8 max-w-2xl mx-auto md:mx-0">
-              CampSync.AI empowers students and alumni with intelligent tools <br />
-              <strong className="text-[#66c408]">for campus placements and academic excellence.</strong>
-            </p>
-            <button
-              className="bg-black text-base font-semibold text-white px-10 py-4 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
-              onClick={handleCTA}
-            >
-              Get Started
-            </button>
-          </div>
-          <div className="w-full md:w-1/2 flex justify-center md:justify-end">
-            <img
-              src={HeroImg}
-              alt="CampSync.AI Hero Illustration"
-              className="w-full max-w-md lg:max-w-lg rounded-xl shadow-2xl"
-            />
-          </div>
-        </section>
+                {/* Promotional Video Section */}
+                <section id="promotional-video" className="py-20">
+                    <div className="bg-white rounded-[2.5rem] p-6 md:p-12 shadow-xl border border-gray-100">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">See CampSync.AI in Action</h2>
+                            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                                Discover how our platform transforms your career journey with powerful AI-driven insights.
+                            </p>
+                        </div>
+                        <div className="relative max-w-5xl mx-auto overflow-hidden shadow-2xl border-white group cursor-pointer">
+                            <video
+                                src={campsyncPromoVideo}
+                                title="CampSync.AI Promotional Video"
+                                controls
+                                loop
+                                className="w-full aspect-video object-cover"
+                            />
+                        </div>
+                        <p className="text-center mt-6 text-sm font-medium text-indigo-500 animate-pulse">
+                           CampSync.AI - Designed by the students for the students
+                        </p>
+                    </div>
+                </section>
 
-        {/* Scroll Down Button - Points to the Video Section */}
-        <ScrollDownButton targetId="promotional-video" />
+                {/* Companies Section */}
+                <section id="companies-section" className="py-20">
+                    <div className="text-center mb-16">
+                        <span className="text-indigo-600 font-bold tracking-widest uppercase text-sm">Top Recruiters</span>
+                        <h2 className="text-4xl font-extrabold text-gray-900 mt-2">Crack the Top Companies</h2>
+                        <p className="text-lg text-gray-600 mt-4 max-w-3xl mx-auto">
+                            From syllabus breakdowns to mock interview prep—everything you need to land your dream job.
+                        </p>
+                    </div>
+                    <div className="space-y-10">
+                        <CompanyScroller direction="ltr" speed="medium" />
+                        <CompanyScroller direction="rtl" speed="medium" />
+                        <CompanyScroller direction="ltr" speed="medium" />
+                    </div>
+                </section>
 
-        {/* Promotional Video Section - NEWLY ADDED */}
-        <section id="promotional-video" className="py-20 bg-gray-50 rounded-xl shadow-inner mt-12 mb-16">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">See CampSync.AI in Action</h2>
-            <p className="text-xl text-gray-700 mb-10 max-w-3xl mx-auto">
-              Discover how CampSync.AI transforms your career journey with our powerful AI tools.
-            </p>
-            <div className="relative w-full max-w-4xl mx-auto aspect-video rounded-xl overflow-hidden shadow-2xl border-4 border-indigo-600">
-              <video
-                src={campsyncPromoVideo}
-                title="CampSync.AI Promotional Video"
-                controls
-                loop
-                className="absolute top-0 left-0 w-full h-full object-cover"
-              />
+                {/* Features Section */}
+                <section id="features" className="py-20">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-extrabold text-gray-900">Platform Features</h2>
+                        <div className="h-1.5 w-20 bg-indigo-600 mx-auto mt-4 rounded-full"></div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {features.map((feature, index) => (
+                            <div key={index} className="group p-8 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-6 ${feature.bgColor} ${feature.color} group-hover:scale-110 transition-transform`}>
+                                    {feature.icon}
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Testimonial Section */}
+                <div className="py-16">
+                    <TestimonialSlider />
+                </div>
+                
+                {/* FAQ Section */}
+                <div className="py-16">
+                    <FAQSection />
+                </div>
+
+                {/* Call to Action */}
+                <section id="signup" className="py-20 my-20">
+                    <div className="bg-gradient-to-br from-indigo-700 via-indigo-800 to-indigo-950 rounded-[3rem] p-8 md:p-20 text-center relative overflow-hidden shadow-2xl">
+                        {/* Decorative Circles */}
+                        <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                        <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full translate-x-1/3 translate-y-1/3"></div>
+                        
+                        <div className="relative z-10">
+                            <h2 className="text-4xl sm:text-6xl font-black text-white mb-6">Ready to Boost Your Career?</h2>
+                            <p className="text-indigo-100 text-xl mb-12 max-w-2xl mx-auto">
+                                Join thousands of students leveraging AI to secure placements at world-class companies.
+                            </p>
+                            <Link to="/signup" className="inline-block bg-white text-indigo-700 hover:bg-emerald-50 font-black text-xl px-14 py-5 rounded-2xl shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer">
+                                Get Started for Free
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+
             </div>
-            <p className="mt-8 text-sm text-gray-500">
-              *Full Demo coming soon! This is a placeholder video.
-            </p>
-          </div>
-        </section>
+        </div>
+    );
+};
 
-        {/* Companies Section */}
-        <section id="companies-section" className="py-20 bg-white">
-          <div className="container mx-auto px-4 text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900">Companies</h2>
-            <p className="text-xl text-gray-600 mt-4 max-w-3xl mx-auto">
-              Want to know the secret behind cracking the below company exams? Our exam resources cover everything from syllabus breakdowns to interview preparation to help you see the big picture
-            </p>
-          </div>
-          <div className="space-y-6"> {/* Added space between company scrollers */}
-            <CompanyScroller direction="ltr" speed="medium" />
-            <CompanyScroller direction="rtl" speed="medium" />
-            <CompanyScroller direction="ltr" speed="medium" />
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section id="features" className="py-20 bg-gray-50 rounded-xl shadow-inner mt-12 mb-16">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-4xl font-bold text-gray-900 mb-12">Key Features</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
-              {/* Feature 1 */}
-              <div className="p-8 border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out bg-white flex flex-col items-center text-center">
-                <div className="text-5xl text-indigo-600 mb-6">
-                  <FaRobot />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">AI Mock Interviews</h3>
-                <p className="text-gray-600">Practice HR and technical interviews with our AI bot, getting instant feedback and personalized tips.</p>
-              </div>
-              {/* Feature 2 */}
-              <div className="p-8 border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out bg-white flex flex-col items-center text-center">
-                <div className="text-5xl text-green-600 mb-6">
-                  <FaChartLine />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">Placement Trends</h3>
-                <p className="text-gray-600">Visualize company visits, hiring patterns, and difficulty trends to strategize your preparation.</p>
-              </div>
-              {/* Feature 3 */}
-              <div className="p-8 border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out bg-white flex flex-col items-center text-center">
-                <div className="text-5xl text-red-600 mb-6">
-                  <FaBuilding />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">Company Insights</h3>
-                <p className="text-gray-600">Get deep dives into specific companies: most-asked questions, difficulty levels, and hiring patterns.</p>
-              </div>
-              {/* Feature 4 */}
-              <div className="p-8 border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out bg-white flex flex-col items-center text-center">
-                <div className="text-5xl text-yellow-600 mb-6">
-                  <FaBookOpen />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">Academic Papers</h3>
-                <p className="text-gray-600">Access a repository of previous year question papers, filterable by subject and year.</p>
-              </div>
-              {/* Feature 5 */}
-              <div className="p-8 border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out bg-white flex flex-col items-center text-center">
-                <div className="text-5xl text-purple-600 mb-6">
-                  <FaUserGraduate />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">Personalized Profile</h3>
-                <p className="text-gray-600">Track your progress, get tailored recommendations, and see alumni contributions.</p>
-              </div>
-              {/* Feature 6 */}
-              <div className="p-8 border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out bg-white flex flex-col items-center text-center">
-                <div className="text-5xl text-cyan-600 mb-6">
-                  <FaLightbulb />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">Smart Recommendations</h3>
-                <p className="text-gray-600">Our AI suggests learning paths and resources based on your goals and performance.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonial Section */}
-        <TestimonialSlider />
-        
-        {/* FAQ Section */}
-        <FAQSection />
-
-        {/* Call to Action */}
-        <section id="signup" className="py-20 bg-indigo-700 text-white text-center rounded-xl shadow-xl mt-16">
-          <div className="container mx-auto px-4">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-6">Ready to Boost Your Career?</h2>
-            <p className="text-xl sm:text-2xl mb-10 max-w-3xl mx-auto">
-              Join thousands of students and alumni who are leveraging CampSync.AI to achieve their placement and academic goals.
-            </p>
-            <Link to="/signup" className="inline-block bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-lg px-12 py-5 rounded-full shadow-xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer">
-              Sign Up for Free
-            </Link>
-          </div>
-        </section>
-
-      </div> {/* End of main container */}
-    </div>
-  )
-}
+// Data for cleaner mapping
+const features = [
+    {
+        icon: <FaRobot />,
+        title: "AI Mock Interviews",
+        desc: "Practice HR and technical interviews with our AI bot, getting instant feedback and personalized tips.",
+        color: "text-indigo-600",
+        bgColor: "bg-indigo-50"
+    },
+    {
+        icon: <FaChartLine />,
+        title: "Placement Trends",
+        desc: "Visualize company visits, hiring patterns, and difficulty trends to strategize your preparation.",
+        color: "text-emerald-600",
+        bgColor: "bg-emerald-50"
+    },
+    {
+        icon: <FaBuilding />,
+        title: "Company Insights",
+        desc: "Get deep dives into specific companies: most-asked questions, difficulty levels, and hiring patterns.",
+        color: "text-rose-600",
+        bgColor: "bg-rose-50"
+    },
+    {
+        icon: <FaBookOpen />,
+        title: "Academic Papers",
+        desc: "Access a repository of previous year question papers, filterable by subject and year.",
+        color: "text-amber-600",
+        bgColor: "bg-amber-50"
+    },
+    {
+        icon: <FaUserGraduate />,
+        title: "Personalized Profile",
+        desc: "Track your progress, get tailored recommendations, and see alumni contributions.",
+        color: "text-purple-600",
+        bgColor: "bg-purple-50"
+    },
+    {
+        icon: <FaLightbulb />,
+        title: "Smart Recommendations",
+        desc: "Our AI suggests learning paths and resources based on your goals and performance.",
+        color: "text-cyan-600",
+        bgColor: "bg-cyan-50"
+    }
+];
 
 export default LandingPage;

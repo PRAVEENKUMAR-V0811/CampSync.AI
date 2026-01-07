@@ -1,13 +1,13 @@
-// src/pages/Academics/QuestionPaperUpload.js
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import { toast } from 'react-hot-toast'; // Assuming you have react-hot-toast for notifications
-import AuthContext from '../Auth/AuthContext'; // Adjust path as needed
+import { toast } from 'react-hot-toast';
+import AuthContext from '../Auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../api';
+import { FaCloudUploadAlt, FaFileAlt, FaTimesCircle } from 'react-icons/fa';
 
 const QuestionPaperUpload = () => {
-  const { user } = useContext(AuthContext); // Get user info (especially token) from context
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [title, setTitle] = useState('');
@@ -15,19 +15,17 @@ const QuestionPaperUpload = () => {
   const [subject, setSubject] = useState('');
   const [examName, setExamName] = useState('');
   const [year, setYear] = useState('');
-  const [tags, setTags] = useState(''); // Comma-separated tags
+  const [tags, setTags] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Redirect if not logged in (though ProtectedRoute should handle this)
   if (!user || !user.token) {
     navigate('/login');
-    return null; // Or render a message
+    return null;
   }
 
   const handleFileChange = (e) => {
-    // Basic file type validation (more robust validation should be on backend)
     const file = e.target.files[0];
     if (file) {
       const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
@@ -57,26 +55,21 @@ const QuestionPaperUpload = () => {
     formData.append('subject', subject);
     formData.append('exam_name', examName);
     formData.append('year', year);
-    formData.append('tags', tags); // Send as comma-separated string
-    formData.append('questionPaperFile', selectedFile); // 'questionPaperFile' must match Multer field name
+    formData.append('tags', tags);
+    formData.append('questionPaperFile', selectedFile);
 
     setUploading(true);
     try {
       const config = {
         headers: {
-          'Content-Type': 'multipart/form-data', // Crucial for file uploads
+          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${user.token}`,
         },
       };
 
-      const { data } = await axios.post(
-        `${API_BASE_URL}/api/question-papers/upload`,
-        formData,
-        config
-      );
+      await axios.post(`${API_BASE_URL}/api/question-papers/upload`, formData, config);
 
       toast.success('Question paper uploaded successfully! It is now awaiting admin approval.');
-      // Clear form
       setTitle('');
       setDescription('');
       setSubject('');
@@ -85,7 +78,7 @@ const QuestionPaperUpload = () => {
       setTags('');
       setSelectedFile(null);
       if (e.target.elements.questionPaperFile) {
-        e.target.elements.questionPaperFile.value = ''; // Clear file input
+        e.target.elements.questionPaperFile.value = '';
       }
 
     } catch (err) {
@@ -93,201 +86,200 @@ const QuestionPaperUpload = () => {
         ? err.response.data.message
         : 'Failed to upload question paper. Please try again.';
       
-      // Check for 401 Unauthorized
       if (err.response && err.response.status === 401) {
-      toast.error("Session expired. Please login again.");
-      // Optionally clear local storage here if you manage auth manually
-      // localStorage.removeItem('userInfo'); 
-      navigate('/login'); // Redirect to login page
-      return;
-    }
+        toast.error("Session expired. Please login again.");
+        navigate('/login');
+        return;
+      }
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error('Upload error:', err.response || err);
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-xl">
-        <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-8">
-          Upload Question Paper
-        </h2>
-        <p className="text-center text-gray-600 mb-6">
-          Share your question papers with the community. All uploads are subject to admin review and approval.
-        </p>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
-            <strong className="font-bold">Error!</strong>
-            <span className="block sm:inline"> {error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-              Paper Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="e.g., Data Structures Midterm Exam"
-              required
-            />
+    // Added pt-28 to clear the fixed header
+    <div className="min-h-screen bg-slate-50 pt-28 pb-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
+          
+          {/* Header Section */}
+          <div className="bg-indigo-600 p-8 md:p-12 text-center text-white">
+            <h2 className="text-3xl md:text-4xl font-black mb-3">
+              Upload Question Paper
+            </h2>
+            <p className="text-indigo-100 max-w-md mx-auto">
+              Share your question papers with the community. All uploads are subject to admin review and approval.
+            </p>
           </div>
 
-          {/* Subject */}
-          <div>
-            <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
-              Subject <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="subject"
-              name="subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="e.g., Computer Science, Mathematics, Physics"
-              required
-            />
-          </div>
-
-          {/* Exam Name */}
-          <div>
-            <label htmlFor="examName" className="block text-sm font-medium text-gray-700">
-              Exam Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="examName"
-              name="examName"
-              value={examName}
-              onChange={(e) => setExamName(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="e.g., GATE 2023, End-Semester Exam"
-              required
-            />
-          </div>
-
-          {/* Year */}
-          <div>
-            <label htmlFor="year" className="block text-sm font-medium text-gray-700">
-              Year <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              id="year"
-              name="year"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="e.g., 2023"
-              min="1900" // Sensible minimum year
-              max={new Date().getFullYear() + 5} // Allow a few years into the future
-              required
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-              Description (Optional)
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows="3"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Provide a brief description of the paper content."
-            ></textarea>
-          </div>
-
-          {/* Tags */}
-          <div>
-            <label htmlFor="tags" className="block text-sm font-medium text-gray-700">
-              Tags (Optional, comma-separated)
-            </label>
-            <input
-              type="text"
-              id="tags"
-              name="tags"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="e.g., algorithms, data structures, exam prep"
-            />
-          </div>
-
-          {/* File Input */}
-          <div>
-            <label htmlFor="questionPaperFile" className="block text-sm font-medium text-gray-700">
-              Select Question Paper File (PDF, DOC, DOCX) <span className="text-red-500">*</span>
-            </label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-              <div className="space-y-1 text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L40 32"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="questionPaperFile"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                  >
-                    <span>Upload a file</span>
-                    <input
-                      id="questionPaperFile"
-                      name="questionPaperFile"
-                      type="file"
-                      className="sr-only"
-                      onChange={handleFileChange}
-                      accept=".pdf,.doc,.docx" // Restrict file types in browser
-                      required
-                    />
-                  </label>
-                  <p className="pl-1">or drag and drop</p>
-                </div>
-                <p className="text-xs text-gray-500">
-                  {selectedFile ? selectedFile.name : 'PDF, DOCX, DOC up to 10MB'}
-                </p>
+          <div className="p-8 md:p-12">
+            {error && (
+              <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl mb-8" role="alert">
+                <FaTimesCircle className="shrink-0" />
+                <p className="text-sm font-medium">{error}</p>
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* Submit Button */}
-          <div>
-            <button
-              type="submit"
-              disabled={uploading}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                uploading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-              }`}
-            >
-              {uploading ? 'Uploading...' : 'Upload Paper'}
-            </button>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Title */}
+                <div className="md:col-span-2">
+                  <label htmlFor="title" className="block text-xs font-black uppercase tracking-widest text-indigo-600 mb-2 ml-1">
+                    Paper Title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all outline-none"
+                    placeholder="e.g., Data Structures Midterm Exam"
+                    required
+                  />
+                </div>
+
+                {/* Subject */}
+                <div>
+                  <label htmlFor="subject" className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
+                    Subject <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="subject"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3.5 focus:border-indigo-500 transition-all outline-none"
+                    placeholder="Computer Science"
+                    required
+                  />
+                </div>
+
+                {/* Exam Name */}
+                <div>
+                  <label htmlFor="examName" className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
+                    Exam Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="examName"
+                    value={examName}
+                    onChange={(e) => setExamName(e.target.value)}
+                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3.5 focus:border-indigo-500 transition-all outline-none"
+                    placeholder="GATE 2023"
+                    required
+                  />
+                </div>
+
+                {/* Year */}
+                <div>
+                  <label htmlFor="year" className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
+                    Year <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="year"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3.5 focus:border-indigo-500 transition-all outline-none"
+                    placeholder="2024"
+                    min="1900"
+                    max={new Date().getFullYear() + 5}
+                    required
+                  />
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <label htmlFor="tags" className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
+                    Tags (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    id="tags"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3.5 focus:border-indigo-500 transition-all outline-none"
+                    placeholder="algorithms, prep"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label htmlFor="description" className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
+                  Description (Optional)
+                </label>
+                <textarea
+                  id="description"
+                  rows="3"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3.5 focus:border-indigo-500 transition-all outline-none resize-none"
+                  placeholder="Provide a brief description of the paper content..."
+                ></textarea>
+              </div>
+
+              {/* File Input */}
+              <div>
+                <label className="block text-xs font-black uppercase tracking-widest text-indigo-600 mb-2 ml-1">
+                  Select Question Paper <span className="text-red-500">*</span>
+                </label>
+                <label
+                  htmlFor="questionPaperFile"
+                  className={`mt-1 flex flex-col items-center justify-center px-6 py-10 border-2 border-dashed rounded-[2rem] transition-all cursor-pointer group ${
+                    selectedFile ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-200 bg-slate-50 hover:border-indigo-500 hover:bg-indigo-50/30'
+                  }`}
+                >
+                  <div className="space-y-2 text-center">
+                    <div className={`mx-auto h-16 w-16 rounded-2xl flex items-center justify-center text-3xl mb-4 transition-colors ${
+                      selectedFile ? 'bg-emerald-100 text-emerald-600' : 'bg-white text-gray-400 group-hover:text-indigo-600'
+                    }`}>
+                      {selectedFile ? <FaFileAlt /> : <FaCloudUploadAlt />}
+                    </div>
+                    <div className="flex text-base font-bold text-gray-700">
+                      <span className="text-indigo-600 group-hover:underline">Click to upload</span>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs font-medium text-gray-400">
+                      {selectedFile ? selectedFile.name : 'PDF, DOCX, DOC (Max 10MB)'}
+                    </p>
+                  </div>
+                  <input
+                    id="questionPaperFile"
+                    name="questionPaperFile"
+                    type="file"
+                    className="sr-only"
+                    onChange={handleFileChange}
+                    accept=".pdf,.doc,.docx"
+                    required
+                  />
+                </label>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className={`w-full flex justify-center py-4 px-6 rounded-2xl text-lg font-black transition-all shadow-xl active:scale-[0.98] cursor-pointer ${
+                    uploading 
+                      ? 'bg-slate-200 text-gray-500 cursor-not-allowed' 
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-200'
+                  }`}
+                >
+                  {uploading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Uploading...
+                    </span>
+                  ) : 'Upload Paper'}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

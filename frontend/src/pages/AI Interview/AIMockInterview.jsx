@@ -2,15 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import ChatMessage from './ChatMessage';
 import InterviewSettings from './InterviewSettings';
-import { Send, Mic, Keyboard, X } from 'lucide-react'; // Added X for close button
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { Send, Mic, Keyboard, X, Info, Award } from 'lucide-react'; 
+import { useNavigate } from 'react-router-dom'; 
 import { API_BASE_URL } from '../../api';
 import bgimage from '../../assets/MeetCampSync.png';
 
-// --- IMPORTANT: Update this URL to match your Node.js backend URL ---
 const BACKEND_URL = `${API_BASE_URL}/api/interview`;
 
-// Initialize SpeechRecognition
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = SpeechRecognition ? new SpeechRecognition() : null;
@@ -20,9 +18,7 @@ if (recognition) {
   recognition.lang = 'en-US';
 }
 
-// ✅ FIX STARTS HERE — added function wrapper
 const AIMockInterview = () => {
-
   const [messages, setMessages] = useState([]);
   const navigate = useNavigate();
   const [input, setInput] = useState('');
@@ -73,9 +69,6 @@ const AIMockInterview = () => {
 
     recognition.onend = () => {
       setIsListening(false);
-      if (input.trim() && useVoiceInput) {
-        // handleSubmit(new Event('submit'));
-      }
     };
 
     return () => {
@@ -141,14 +134,9 @@ const AIMockInterview = () => {
         ]);
       }
     } catch (error) {
-      console.error('Network or API error:', error);
       setMessages((prev) => [
         ...prev,
-        {
-          type: 'bot',
-          text: `Network error: Could not connect to the backend server. Is it running? (${error.message})`,
-          id: uuidv4()
-        }
+        { type: 'bot', text: `Network error: Could not connect to server.`, id: uuidv4() }
       ]);
     } finally {
       setLoading(false);
@@ -159,9 +147,7 @@ const AIMockInterview = () => {
     e.preventDefault();
     if (!input.trim() || loading || interviewEnded) return;
 
-    if (isListening) {
-      stopListening();
-    }
+    if (isListening) stopListening();
 
     const userMessage = input;
     setMessages((prev) => [
@@ -187,26 +173,9 @@ const AIMockInterview = () => {
           ...prev,
           { type: 'bot', text: data.response, id: uuidv4() }
         ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            type: 'bot',
-            text: `Error from backend: ${data.error || 'Unknown error'}`,
-            id: uuidv4()
-          }
-        ]);
       }
     } catch (error) {
-      console.error('Network or API error:', error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          type: 'bot',
-          text: `Network error: Could not connect to the backend server. Is it running? (${error.message})`,
-          id: uuidv4()
-        }
-      ]);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -239,33 +208,49 @@ const AIMockInterview = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex flex-col items-center justify-center p-4">
+    // Added pt-28 to ensure content is below the fixed header
+    <div className="min-h-screen bg-slate-50 pt-28 pb-10 px-4 flex flex-col items-center justify-start overflow-x-hidden">
       {!interviewStarted && (
-        <InterviewSettings onStartInterview={handleStartInterview} />
+        <div className="w-full max-w-lg animate-in fade-in zoom-in duration-300">
+          <InterviewSettings onStartInterview={handleStartInterview} />
+        </div>
       )}
 
       {interviewStarted && (
-        <div className="w-full max-w-7xl bg-white rounded-2xl shadow-2xl flex h-[90vh] overflow-hidden transform transition-all duration-300 ease-in-out">
-          {/* Left Panel */}
-          <div className="flex-2 flex flex-col border-r border-gray-200 relative">
-            <header className="p-5 border-b bg-gradient-to-r from-indigo-700 to-purple-800 text-white rounded-tl-2xl shadow-md flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-extrabold tracking-wide">AI Mock Interview</h1>
-                <p className="text-sm opacity-90 mt-1">
-                  Role: <span className="font-semibold">{interviewContext.role}</span>, Level:{' '}
-                  <span className="font-semibold">{interviewContext.level}</span>
-                </p>
+        <div className="w-full max-w-7xl bg-white rounded-[2.5rem] shadow-2xl flex h-[80vh] md:h-[85vh] overflow-hidden border border-gray-100 relative">
+          
+          {/* Main Chat Panel */}
+          <div className="flex-1 lg:flex-[2] flex flex-col relative bg-white">
+            
+            {/* Header */}
+            <header className="px-6 py-5 border-b bg-gray-900 text-white flex justify-between items-center shadow-lg z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-xl font-black">
+                  C
+                </div>
+                <div>
+                  <h1 className="text-lg md:text-xl font-bold tracking-tight">AI Mock Interview</h1>
+                  <div className="flex items-center gap-2 text-[10px] md:text-xs text-indigo-300 font-bold uppercase tracking-widest">
+                    <span>{interviewContext.role}</span>
+                    <span className="text-gray-600">•</span>
+                    <span>{interviewContext.level}</span>
+                  </div>
+                </div>
               </div>
               <button
                 onClick={handleEndInterviewConfirmation}
-                className="cursor-pointer ml-4 px-5 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
+                className="cursor-pointer px-4 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white text-xs font-bold rounded-xl transition-all border border-rose-500/20 disabled:opacity-30 active:scale-95"
                 disabled={loading || interviewEnded}
               >
-                End Interview
+                End Session
               </button>
             </header>
 
-            <div ref={chatMessagesRef} className="flex-1 p-6 overflow-y-auto space-y-5 bg-gray-50 custom-scrollbar">
+            {/* Chat Area */}
+            <div 
+              ref={chatMessagesRef} 
+              className="flex-1 p-4 md:p-8 overflow-y-auto space-y-6 bg-slate-50/50 scroll-smooth custom-scrollbar"
+            >
               {messages.map((msg, index) => (
                 <ChatMessage
                   key={msg.id}
@@ -276,14 +261,19 @@ const AIMockInterview = () => {
                 />
               ))}
               {loading && messages.length > 0 && messages[messages.length - 1]?.type === 'user' && (
-                <ChatMessage type="bot" text="Typing..." isTyping={true} isUserMessage={false} />
+                <div className="flex items-center gap-2 text-indigo-600 font-medium text-sm animate-pulse ml-4">
+                   AI is analyzing your response...
+                </div>
               )}
               {isListening && input && (
-                <ChatMessage type="user" text={`... ${input}`} isTyping={true} isUserMessage={true} />
+                <div className="bg-white/80 p-4 rounded-2xl border border-indigo-100 italic text-gray-400 text-sm ml-auto max-w-[80%] shadow-sm animate-pulse">
+                  Listening: {input}
+                </div>
               )}
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200 bg-white flex items-center gap-3">
+            {/* Input Form */}
+            <form onSubmit={handleSubmit} className="p-4 md:p-6 border-t border-gray-100 bg-white flex items-center gap-3 md:gap-4">
               {recognition && (
                 <button
                   type="button"
@@ -292,8 +282,8 @@ const AIMockInterview = () => {
                     if (isListening) stopListening();
                     setInput('');
                   }}
-                  className="cursor-pointer p-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
-                  aria-label={useVoiceInput ? 'Switch to text input' : 'Switch to voice input'}
+                  className="cursor-pointer p-3 md:p-4 bg-slate-100 text-slate-600 rounded-2xl hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-90"
+                  title={useVoiceInput ? 'Switch to text input' : 'Switch to voice input'}
                   disabled={loading || interviewEnded}
                 >
                   {useVoiceInput ? <Keyboard className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
@@ -304,19 +294,17 @@ const AIMockInterview = () => {
                 <button
                   type="button"
                   onClick={isListening ? stopListening : startListening}
-                  className={`cursor-pointer flex-1 p-3 rounded-full flex items-center justify-center gap-2
-                    ${isListening ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}
-                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-300 transition-colors`}
+                  className={`cursor-pointer flex-1 p-3 md:p-4 rounded-2xl flex items-center justify-center gap-3 font-bold transition-all
+                    ${isListening 
+                      ? 'bg-rose-500 text-white animate-pulse' 
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100'
+                    } disabled:opacity-50`}
                   disabled={loading || interviewEnded}
                 >
                   {isListening ? (
-                    <>
-                      <Mic className="w-5 h-5 animate-pulse" /> Stop Listening
-                    </>
+                    <> <div className="w-2 h-2 bg-white rounded-full animate-ping" /> Stop Recording </>
                   ) : (
-                    <>
-                      <Mic className="w-5 h-5" /> Speak Your Answer
-                    </>
+                    <> <Mic className="w-5 h-5" /> Speak Answer </>
                   )}
                 </button>
               ) : (
@@ -324,64 +312,79 @@ const AIMockInterview = () => {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={loading ? 'Waiting for response...' : 'Type your answer here...'}
-                  className="flex-1 p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-800"
+                  placeholder={loading ? 'AI is thinking...' : 'Type your answer here...'}
+                  className="flex-1 p-3 md:p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all text-gray-700 placeholder:text-gray-400"
                   disabled={loading || interviewEnded}
                 />
               )}
 
               <button
                 type="submit"
-                className="cursor-pointer p-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-300 transition-colors flex items-center justify-center"
+                className="cursor-pointer p-3 md:p-4 bg-gray-900 text-white rounded-2xl hover:bg-indigo-600 active:scale-90 transition-all disabled:bg-slate-200 disabled:text-slate-400"
                 disabled={loading || !input.trim() || interviewEnded}
-                aria-label="Send message"
               >
                 <Send className="w-5 h-5" />
               </button>
             </form>
 
+            {/* End Interview Overlay */}
             {interviewEnded && (
-              <div className="absolute inset-0 bg-white bg-opacity-95 backdrop-blur-sm flex flex-col items-center justify-center p-6 rounded-tl-2xl rounded-bl-2xl z-20">
-                <h2 className="text-3xl font-extrabold text-gray-900 mb-6 text-center">Interview Concluded!</h2>
-                <p className="text-lg text-gray-700 mb-8 text-center">What would you like to do next?</p>
-                <div className="flex flex-col space-y-4 w-full max-w-sm">
-                  <button
-                    onClick={resetInterview}
-                    className="cursor-pointer w-full py-4 px-6 bg-red-600 text-white font-bold rounded-xl shadow-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-300"
-                  >
-                    End Interview
-                  </button>
-                  <button
-                    onClick={() => handleStartInterview(interviewContext.role, interviewContext.level)}
-                    className="cursor-pointer w-full py-4 px-6 bg-green-600 text-white font-bold rounded-xl shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300"
-                  >
-                    Start a New Interview
-                  </button>
-                  <button
-                    onClick={handleReturnToHome}
-                    className="cursor-pointer w-full py-4 px-6 bg-gray-600 text-white font-bold rounded-xl shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300"
-                  >
-                    Return to Home Page
-                  </button>
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-md flex flex-col items-center justify-center p-8 z-50 animate-in fade-in duration-300">
+                <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl border border-gray-100 text-center max-w-md w-full">
+                  <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl">
+                    <Award />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-2">Session Finished</h2>
+                  <p className="text-gray-500 mb-8">What would you like to do next?</p>
+                  
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={() => handleStartInterview(interviewContext.role, interviewContext.level)}
+                      className="cursor-pointer w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all shadow-lg"
+                    >
+                      Restart Interview
+                    </button>
+                    <button
+                      onClick={handleReturnToHome}
+                      className="cursor-pointer w-full py-4 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition-all"
+                    >
+                      Return to Dashboard
+                    </button>
+                    <button
+                      onClick={resetInterview}
+                      className="cursor-pointer w-full py-4 text-rose-500 font-bold hover:bg-rose-50 rounded-2xl transition-all"
+                    >
+                      Exit Mock Interview
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Right Panel */}
-          <div className="flex-1 flex flex-col bg-gray-100 rounded-br-2xl">
-            <header className="p-5 border-b border-gray-200 bg-gray-200 text-gray-800 rounded-tr-2xl shadow-sm flex items-center justify-center">
-              <h2 className="text-xl font-bold">Product Promotion</h2>
+          {/* Right Promotion Panel (Hidden on Mobile) */}
+          <div className="hidden lg:flex flex-col w-[380px] bg-slate-50 border-l border-gray-100">
+            <header className="p-6 border-b border-gray-200 bg-white">
+              <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 flex items-center gap-2">
+                <Info size={14} /> Recommended for you
+              </h2>
             </header>
-            <div className="flex-1 p-6 flex flex-col items-center justify-center text-gray-700">
-              <img
-                src={bgimage}
-                alt="Product Promotion"
-                className="max-w-full h-auto rounded-lg shadow-lg mb-4"
-              />
-              <p className="text-center text-gray-600 text-lg">
-                Boost your career with **Interview Pro AI**! <br /> Realistic simulations, instant feedback, and tailored coaching.
+            <div className="flex-1 p-8 flex flex-col items-center justify-center text-center">
+              <div className="relative group cursor-pointer mb-8">
+                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <img
+                  src={bgimage}
+                  alt="Promotion"
+                  className="relative max-w-full h-auto rounded-xl shadow-xl transition-transform duration-500 group-hover:scale-[1.02]"
+                />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-3">Upgrade to Pro</h3>
+              <p className="text-gray-500 text-sm leading-relaxed mb-6">
+                Realistic simulations, detailed performance reports, and AI-powered career coaching.
               </p>
+              <button className="cursor-pointer w-full py-3 bg-white border-2 border-indigo-600 text-indigo-600 font-bold rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
+                Learn More
+              </button>
             </div>
           </div>
         </div>
@@ -389,6 +392,5 @@ const AIMockInterview = () => {
     </div>
   );
 };
-// ✅ FIX ENDS HERE
 
 export default AIMockInterview;

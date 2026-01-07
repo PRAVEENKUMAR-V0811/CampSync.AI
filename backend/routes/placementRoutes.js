@@ -1,10 +1,9 @@
-// backend/routes/placementRoutes.js
 const express = require('express');
 const router = express.Router();
 const Placement = require('../models/Placement');
-const { protect, admin } = require('../middleware/authMiddleware');// Use your existing auth middleware
+const { protect } = require('../middleware/authMiddleware');
 
-// Get stats for the logged-in faculty's students
+// Get stats for logged-in faculty
 router.get('/faculty-stats', protect, async (req, res) => {
   try {
     const students = await Placement.find({ addedBy: req.user.id });
@@ -22,41 +21,50 @@ router.get('/faculty-stats', protect, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// CRUD Operations
+// CRUD: Get only my students
 router.get('/my-students', protect, async (req, res) => {
-  const students = await Placement.find({ addedBy: req.user.id });
-  res.json(students);
+  try {
+    const students = await Placement.find({ addedBy: req.user.id }).sort({ createdAt: -1 });
+    res.json(students);
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 router.post('/add', protect, async (req, res) => {
-  const studentData = { ...req.body, addedBy: req.user.id };
-  if (studentData.status === 'Unplaced') {
-    studentData.company = 'Not Applicable';
-    studentData.lpa = 0;
-  }
-  const newStudent = new Placement(studentData);
-  await newStudent.save();
-  res.json(newStudent);
+  try {
+    const studentData = { ...req.body, addedBy: req.user.id };
+    if (studentData.status === 'Unplaced') {
+      studentData.company = 'Not Applicable';
+      studentData.lpa = 0;
+    }
+    const newStudent = new Placement(studentData);
+    await newStudent.save();
+    res.json(newStudent);
+  } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
 router.put('/update/:id', protect, async (req, res) => {
-  const student = await Placement.findOne({ _id: req.params.id, addedBy: req.user.id });
-  if (!student) return res.status(404).json({ msg: "Not authorized or not found" });
-  
-  Object.assign(student, req.body);
-  await student.save();
-  res.json(student);
+  try {
+    const student = await Placement.findOne({ _id: req.params.id, addedBy: req.user.id });
+    if (!student) return res.status(404).json({ msg: "Not authorized or not found" });
+    Object.assign(student, req.body);
+    await student.save();
+    res.json(student);
+  } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
 router.delete('/delete/:id', protect, async (req, res) => {
-  await Placement.findOneAndDelete({ _id: req.params.id, addedBy: req.user.id });
-  res.json({ msg: "Deleted" });
+  try {
+    await Placement.findOneAndDelete({ _id: req.params.id, addedBy: req.user.id });
+    res.json({ msg: "Deleted" });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Public route for the Trend Dashboard (All students)
+// Public: Trend Dashboard
 router.get('/all-placements', async (req, res) => {
-  const data = await Placement.find({});
-  res.json(data);
+  try {
+    const data = await Placement.find({});
+    res.json(data);
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 module.exports = router;

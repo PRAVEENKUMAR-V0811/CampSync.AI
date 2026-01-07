@@ -26,6 +26,7 @@ import MyUploads from './pages/Academics/MyUploads';
 import InterviewExperienceDetailPage from './pages/Company Insights/InterviewExperienceDetailPage';
 import AboutUs from './components/AboutUs';
 import SubmitFeedback from './pages/Feedback/SubmitFeedback';
+import ScrollToTop from './components/ScrollToTop';
 // --- NEW IMPORTS FOR ADMIN ---
 import AdminDashboard from '../src/pages/Admin/AdminDashboard'; // Your admin dashboard page
 // --- END NEW IMPORTS ---
@@ -42,6 +43,7 @@ const AppWrapper = () => {
 
   return (
     <>
+      <ScrollToTop />
       {showHeaderFooter && <Header />}
 
       <Routes>
