@@ -21,12 +21,11 @@ const sendEmail = async (options) => {
   });
 
   const mailOptions = {
-    from: `CampSync.AI <${process.env.EMAIL_FROM}>`,
+    from: `CampSync.AI - Praveen Kumar <${process.env.EMAIL_FROM}>`,
     to: options.email,
     subject: options.subject,
     html: options.message,
   };
-
   await transporter.sendMail(mailOptions);
 };
 
