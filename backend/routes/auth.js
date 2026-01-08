@@ -7,26 +7,28 @@ const User = require('../models/User');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const { protect } = require('../middleware/authMiddleware');
+const axios = require('axios'); 
 
-// --- EMAIL CONFIGURATION HELPER ---
+// --- EMAIL CONFIGURATION HELPER (API METHOD) ---
 const sendEmail = async (options) => {
-  const transporter = nodemailer.createTransport({
-    host: process.env.BREVO_HOST,
-    port: process.env.BREVO_PORT,
-    secure: false,
-    auth: {
-      user: process.env.BREVO_USER,
-      pass: process.env.BREVO_PASS,
-    },
-  });
-
-  const mailOptions = {
-    from: `CampSync.AI - Praveen Kumar <${process.env.EMAIL_FROM}>`,
-    to: options.email,
+  const brevoData = {
+    sender: { name: "CampSync.AI", email: process.env.EMAIL_FROM },
+    to: [{ email: options.email }],
     subject: options.subject,
-    html: options.message,
+    htmlContent: options.message, // Brevo API uses htmlContent field
   };
-  await transporter.sendMail(mailOptions);
+
+  try {
+    await axios.post('https://api.brevo.com/v3/smtp/email', brevoData, {
+      headers: {
+        'api-key': process.env.BREVO_API_KEY,
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error) {
+    console.error("Brevo API Error:", error.response ? error.response.data : error.message);
+    throw new Error("Email could not be sent");
+  }
 };
 
 // --- EMAIL ASSETS ---

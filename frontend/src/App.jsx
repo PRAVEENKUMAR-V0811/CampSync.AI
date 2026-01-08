@@ -10,6 +10,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './pages/Auth/ProtectedRoute';
+import TeamPage from './components/TeamPage';
 
 // --- LAZY LOADED PAGES (Performance Optimization) ---
 // Public Pages
@@ -119,6 +120,7 @@ const App = () => {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/submit-feedback" element={<SubmitFeedback />} />
+            <Route path="/team" element={<TeamPage />} />
 
             {/* Protected (User) */}
             <Route element={<ProtectedRoute />}>
