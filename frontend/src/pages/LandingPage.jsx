@@ -1,9 +1,19 @@
-import React from 'react';
-import { FaRobot, FaChartLine, FaBuilding, FaBookOpen, FaUserGraduate, FaLightbulb } from "react-icons/fa";
+import React, { useState, useEffect} from 'react';
+import { 
+    FaRobot, FaChartLine, FaBuilding, FaBookOpen, 
+    FaUserGraduate, FaLightbulb 
+} from "react-icons/fa";
+import { 
+    Menu, X, LogIn 
+} from 'lucide-react';
+import { useNavigate, Link} from 'react-router-dom';
+
+// Assets
 import HeroImg from "../assets/heroimg.png"; 
 import campsyncPromoVideo from "../assets/Videos/CampSync.AI Promo.mp4";
-import logo from "../assets/logo2.png"; 
-import { useNavigate, Link } from 'react-router-dom';
+import logo from "../assets/logofinal.png"; 
+
+// Components
 import CompanyScroller from './CompanyScroller';
 import FAQSection from '../components/FAQSection';
 import ScrollDownButton from './ScrollDownButton';
@@ -11,17 +21,113 @@ import TestimonialSlider from './TestimonialSlider';
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    
+    // Header States
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+
+    // Handle Scroll for Glassmorphism
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const handleCTA = () => {
       navigate("/signup");
     };
 
     return (
-        // Added pt-24 to prevent content from being hidden under the fixed header
-        <div className="w-full min-h-screen bg-slate-50 pt-24 overflow-x-hidden">
+        <div className="w-full min-h-screen bg-slate-50 overflow-x-hidden">
             
+            {/* --- INTEGRATED HEADER --- */}
+            <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+                scrolled 
+                ? 'bg-white/80 backdrop-blur-lg shadow-lg py-2' 
+                : 'bg-white py-4'
+            }`}>
+                <nav className="container mx-auto px-5 md:px-8 flex items-center justify-between">
+                    
+                    {/* Logo Section */}
+                    <div 
+                        className="flex shrink-0 items-center space-x-3 cursor-pointer group" 
+                        onClick={() => navigate('/')}
+                    >
+                        <img src={logo} alt="Logo" className="h-12 w-auto group-hover:scale-110 transition-transform duration-300" />
+                        <div className="hidden sm:block">
+                            <p className="text-sm font-black text-slate-900 leading-none">CampSync.AI</p>
+                            <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Intelligent Campus Management</p>
+                        </div>
+                    </div>
+
+                    
+
+                    {/* Desktop Auth Actions */}
+                    <div className="hidden lg:flex items-center space-x-4">
+                        <button 
+                            onClick={() => navigate('/login')}
+                            className="px-5 py-2.5 text-sm font-bold text-slate-700 hover:text-indigo-600 transition-colors cursor-pointer"
+                        >
+                            Login
+                        </button>
+                        <button 
+                            onClick={() => navigate('/signup')}
+                            className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all cursor-pointer"
+                        >
+                            Get Started
+                        </button>
+                    </div>
+
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(true)}
+                        className="lg:hidden p-2.5 text-slate-700 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+                    >
+                        <Menu size={28} />
+                    </button>
+                </nav>
+
+                {/* Mobile Sidebar Overlay */}
+                <div 
+                    className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 lg:hidden transition-opacity duration-300 ${
+                        isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                    }`} 
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                />
+
+                {/* Mobile Sidebar Content */}
+                <div className={`fixed inset-y-0 right-0 w-80 bg-white shadow-2xl z-[60] lg:hidden transform transition-transform duration-500 ${
+                    isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+                }`}>
+                    <div className="flex flex-col h-full p-6">
+                        <div className="flex justify-between items-center mb-10">
+                            <img src={logo} alt="Logo" className="h-8 w-auto" />
+                            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-slate-100 rounded-full cursor-pointer">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="mt-8 pt-6 border-t border-slate-100 space-y-3">
+                            <button 
+                                onClick={() => { navigate('/login'); setIsMobileMenuOpen(false); }}
+                                className="flex items-center space-x-4 w-full p-4 text-slate-700 hover:bg-slate-50 rounded-2xl font-semibold cursor-pointer"
+                            >
+                                <LogIn size={22} className="text-slate-400" />
+                                <span>Login</span>
+                            </button>
+                            <button 
+                                onClick={() => { navigate('/signup'); setIsMobileMenuOpen(false); }}
+                                className="w-full p-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100 cursor-pointer text-center"
+                            >
+                                Get Started Free
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
             {/* Main Content Wrapper */}
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24">
 
                 {/* Hero Section */}
                 <section className="flex flex-col md:flex-row items-center justify-between py-12 md:py-20 gap-10">
@@ -57,7 +163,7 @@ const LandingPage = () => {
                         <img
                             src={HeroImg}
                             alt="CampSync.AI Hero"
-                            className="relative w-full h-115  mx-auto rounded-3xl shadow-2xl transform transition duration-500 group-hover:scale-[1.02]"
+                            className="relative w-full h-auto max-h-[500px] object-contain mx-auto rounded-3xl shadow-2xl transform transition duration-500 group-hover:scale-[1.02]"
                         />
                     </div>
                 </section>
@@ -139,7 +245,6 @@ const LandingPage = () => {
                 {/* Call to Action */}
                 <section id="signup" className="py-20 my-20">
                     <div className="bg-gradient-to-br from-indigo-700 via-indigo-800 to-indigo-950 rounded-[3rem] p-8 md:p-20 text-center relative overflow-hidden shadow-2xl">
-                        {/* Decorative Circles */}
                         <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
                         <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full translate-x-1/3 translate-y-1/3"></div>
                         
@@ -160,7 +265,7 @@ const LandingPage = () => {
     );
 };
 
-// Data for cleaner mapping
+// Features Data
 const features = [
     {
         icon: <FaRobot />,

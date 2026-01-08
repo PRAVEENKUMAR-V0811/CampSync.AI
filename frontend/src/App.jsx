@@ -1,111 +1,177 @@
-import React from 'react';
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import LogoLoader from './components/LogoLoader';
 
+// --- GLOBAL COMPONENTS ---
 import Header from './components/Header';
 import Footer from './components/Footer';
-import LandingPage from './pages/LandingPage';
-import ContactUs from './pages/Contact/ContactUs';
-import Login from './pages/Auth/Login';
-import Signup from './pages/Auth/Signup';
-import HomePage from './pages/Home/HomePage';
-import ProfilePage from './pages/Profile/ProfilePage';
-import TermsPage from './pages/Terms & Privacy/TermsPage';
-import PrivacyPage from './pages/Terms & Privacy/PrivacyPage';
-import CompanyInsightsPage from './pages/Company Insights/CompanyInsightsPage';
-import InterviewExperienceSharingPage from './pages/Company Insights/InterviewExperienceSharingPage';
-import QuestionPaperUpload from './pages/Academics/QuestionPaperUpload';
-import PlacementTrendDashboard from './pages/PlacementTrends/PlacementTrendDashboard';
-import ForgotPassword from './pages/Auth/ForgotPassword';
-import ResetPassword from './pages/Auth/ResetPassword';
-import ProtectedRoute from './pages/Auth/ProtectedRoute';
-import AIMockInterview from './pages/AI Interview/AIMockInterview';
-import QuestionBank from './pages/Academics/QuestionBank';
-import MyUploads from './pages/Academics/MyUploads';
-import InterviewExperienceDetailPage from './pages/Company Insights/InterviewExperienceDetailPage';
-import AboutUs from './components/AboutUs';
-import SubmitFeedback from './pages/Feedback/SubmitFeedback';
 import ScrollToTop from './components/ScrollToTop';
-// --- NEW IMPORTS FOR ADMIN ---
-import AdminDashboard from '../src/pages/Admin/AdminDashboard'; // Your admin dashboard page
-// --- END NEW IMPORTS ---
+import ProtectedRoute from './pages/Auth/ProtectedRoute';
 
-// Create a wrapper component to use useLocation
-const AppWrapper = () => {
-  const location = useLocation();
-  // Ensure the noHeaderFooter array includes all paths that shouldn't have them,
-  // including specific dynamic routes if needed, or refine the logic.
-  // Note: /mock-interview is still here if you want to hide header/footer on the bot page
-  const noHeaderFooter = ['/login', '/signup', '/mock-interview', '/forgotpassword', '/resetpassword', '/admin']; 
+// --- LAZY LOADED PAGES (Performance Optimization) ---
+// Public Pages
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const ContactUs = lazy(() => import('./pages/Contact/ContactUs'));
+const TermsPage = lazy(() => import('./pages/Terms & Privacy/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/Terms & Privacy/PrivacyPage'));
+const AboutUs = lazy(() => import('./components/AboutUs'));
+const SubmitFeedback = lazy(() => import('./pages/Feedback/SubmitFeedback'));
 
-  const showHeaderFooter = !noHeaderFooter.some(path => location.pathname.startsWith(path));
+// Auth Pages
+const Login = lazy(() => import('./pages/Auth/Login'));
+const Signup = lazy(() => import('./pages/Auth/Signup'));
+const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
 
-  return (
-    <>
-      <ScrollToTop />
-      {showHeaderFooter && <Header />}
+// Protected User Pages
+const HomePage = lazy(() => import('./pages/Home/HomePage'));
+const ProfilePage = lazy(() => import('./pages/Profile/ProfilePage'));
+const CompanyInsightsPage = lazy(() => import('./pages/Company Insights/CompanyInsightsPage'));
+const InterviewExperienceDetailPage = lazy(() => import('./pages/Company Insights/InterviewExperienceDetailPage'));
+const InterviewExperienceSharingPage = lazy(() => import('./pages/Company Insights/InterviewExperienceSharingPage'));
+const PlacementTrendDashboard = lazy(() => import('./pages/PlacementTrends/PlacementTrendDashboard'));
+const QuestionPaperUpload = lazy(() => import('./pages/Academics/QuestionPaperUpload'));
+const QuestionBank = lazy(() => import('./pages/Academics/QuestionBank'));
+const MyUploads = lazy(() => import('./pages/Academics/MyUploads'));
 
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/contact" element={<ContactUs />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/forgotpassword" element={<ForgotPassword />} />
-        <Route path="/resetpassword/:resetToken" element={<ResetPassword />} />
-        <Route path="/about-us" element={<AboutUs />} />
-        <Route path="/submit-feedback" element={<SubmitFeedback />} />
+// Standalone AI Interview
+const AIMockInterview = lazy(() => import('./pages/AI Interview/AIMockInterview'));
 
+// Admin Pages
+const AdminDashboard = lazy(() => import('../src/pages/Admin/AdminDashboard'));
+const SuperAdminDashboard = lazy(() => import('../src/pages/Admin/SuperAdminDashboard'));
 
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<HomePage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/company-insights" element={<CompanyInsightsPage />} />
-          <Route path="/company-insights/:id" element={<InterviewExperienceDetailPage />} />
-          <Route path="/share-experience" element={<InterviewExperienceSharingPage />} />
-          <Route path="/placements/data" element={<PlacementTrendDashboard />} />
-          <Route path="/academic-papers-upload" element={<QuestionPaperUpload />} />
-          <Route path="/interview" element={<AIMockInterview />} />
-          <Route path="/question-bank" element={<QuestionBank />} />
-          <Route path="/my-uploads" element={<MyUploads />} />
-        </Route>
+// 404 Page
+const NotFound = lazy(() => import('../src/components/NotFound'));
 
+// --- LAYOUT DEFINITIONS ---
 
-        {/* --- ADMIN PROTECTED ROUTES --- */}
-        {/* This route group will only be accessible to users with the 'admin' role */}
-        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-          <Route path="/admin" element={<AdminDashboard />}> {/* AdminLayout will be the parent for all admin pages */}
-            {/* <Route path="dashboard" element={<AdminDashboard />} /> /admin/dashboard */}
-            {/* Add other admin-specific routes here */}
-          </Route>
-        </Route>
-        {/* --- END ADMIN PROTECTED ROUTES --- */}
-         {/* Catch-all route for 404 - Optional */}
-        <Route path="*" element={<div>404 - Page Not Found</div>} />
-      </Routes>
+/**
+ * MainLayout: Used for pages that require the standard navigation Header and Footer.
+ */
+const MainLayout = () => (
+  <div className="flex flex-col min-h-screen">
+    <ScrollToTop />
+    <Header />
+    <main className="flex-grow">
+      <Suspense fallback={<PageLoader />}>
+        <Outlet />
+      </Suspense>
+    </main>
+    <Footer />
+  </div>
+);
 
-      {showHeaderFooter && <Footer />}
-    </>
-  );
-};
+/**
+ * CleanLayout: Used for full-screen experiences (Auth, Interview, 404).
+ * No Header or Footer is rendered here.
+ */
+const CleanLayout = () => (
+  <div className="min-h-screen">
+    <ScrollToTop />
+    <main>
+      <Suspense>
+        <Outlet />
+      </Suspense>
+    </main>
+  </div>
+);
+
+/**
+ * PageLoader: Visual feedback during lazy loading transitions.
+ */
+const PageLoader = () => (
+  <div className="h-screen w-full flex flex-col items-center justify-center bg-[#eff0f7] text-indigo-500">
+    <Loader2 className="animate-spin mb-4" size={48} />
+    <p className="text-xs font-black tracking-[0.3em] text-slate-800 animate-pulse">Hang On! Loading Content...</p>
+  </div>
+);
+
+// --- MAIN APP COMPONENT ---
 
 const App = () => {
+  const [isAppLoading, setIsAppLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial loading time
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 4000); // 3 seconds total animation
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isAppLoading) {
+    return <LogoLoader />;
+  }
   return (
     <>
       <Router>
-        <AppWrapper />
+        <Routes>
+          
+          {/* A. ROUTES WITH HEADER & FOOTER */}
+          <Route element={<MainLayout />}>
+            {/* Public */}
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/submit-feedback" element={<SubmitFeedback />} />
+
+            {/* Protected (User) */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<HomePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/company-insights" element={<CompanyInsightsPage />} />
+              <Route path="/company-insights/:id" element={<InterviewExperienceDetailPage />} />
+              <Route path="/share-experience" element={<InterviewExperienceSharingPage />} />
+              <Route path="/placements/data" element={<PlacementTrendDashboard />} />
+              <Route path="/academic-papers-upload" element={<QuestionPaperUpload />} />
+              <Route path="/question-bank" element={<QuestionBank />} />
+              <Route path="/my-uploads" element={<MyUploads />} />
+            </Route>
+          </Route>
+
+
+          {/* B. STANDALONE ROUTES (NO HEADER / NO FOOTER) */}
+          <Route element={<CleanLayout />}>
+            {/* Auth */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgotpassword" element={<ForgotPassword />} />
+            <Route path="/resetpassword/:resetToken" element={<ResetPassword />} />
+
+            {/* Protected Full-Screen (Interview) */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/interview" element={<AIMockInterview />} />
+            </Route>
+
+            {/* Protected Admin Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/super-admin" element={<SuperAdminDashboard />} />
+            </Route>
+
+            {/* 404 NOT FOUND (Catch-all) */}
+            <Route path="*" element={<NotFound />} />
+          </Route>
+
+        </Routes>
       </Router>
 
-      {/* Toast Notifications */}
+      {/* Global Toast Notifications */}
       <Toaster
         toastOptions={{
-          className: "w-auto h-auto p-4 text-sm rounded shadow-lg bg-white text-black",
-          duration: 2000,
-          style: { fontSize: "16px", border: '1px solid #e2e8f0' },
+          className: "w-auto h-auto p-4 text-sm rounded shadow-lg bg-white text-black font-medium",
+          duration: 3000,
+          style: { 
+            fontSize: "14px", 
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px'
+          },
         }}
         position="top-center"
       />

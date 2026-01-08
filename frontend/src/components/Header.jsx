@@ -6,11 +6,12 @@ import {
 } from 'lucide-react';
 // import logo from '../assets/Logo.png';
 // import logo from '../assets/1.jpg';
-import logo from '../assets/5.jpg';
+// import logo from '../assets/5.jpg';
 // import logo from '../assets/8.jpg';
 // import logo from '../assets/9.jpg';
 // import logo from '../assets/14.jpg';
 // import logo from '../assets/15.jpg';
+import logo from '../assets/logofinal.png';
 
 const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -72,8 +73,11 @@ const Header = () => {
                     onClick={() => navigate('/')}
                 >
                     <img src={logo} alt="Logo" className="h-12 w-auto group-hover:scale-110 transition-transform duration-300" />
-                    <span className="text-2xl font-extrabold tracking-tight text-indigo-950">
+                    {/* <span className="text-2xl font-extrabold tracking-tight text-indigo-950">
                         Camp<span className='text-sky-500'>Sync.ai</span>
+                    </span> */}
+                    <span className="text-xs mt-2 text-slate-500 font-medium tracking-wide">
+                        INTELLIGENT CAMPUS MANAGEMENT
                     </span>
                 </div>
 

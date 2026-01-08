@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import AuthContext from '../Auth/AuthContext';
 import { API_BASE_URL } from '../../api';
+import { useNavigate } from "react-router-dom";
 
 // --- Enhanced Icon Set ---
 const Icons = {
@@ -29,6 +30,7 @@ const AdminDashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   
   // Stats State
   const [stats, setStats] = useState({ userCount: 0, totalDocs: 0, approvedDocs: 0, rejectedDocs: 0, pendingDocs: 0 });
@@ -87,10 +89,17 @@ const AdminDashboard = () => {
         </div>
 
         <div className="mt-auto p-6 border-t border-slate-800 bg-slate-900/50 flex flex-col gap-3">
-          <button onClick={() => toast("Super Admin login coming soon!")} className="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-blue-400 hover:bg-blue-500/10 rounded-xl transition-all">
-             <Icons.Shield /> Super Admin Login
+          <button
+            onClick={() => navigate("/super-admin")}
+            className="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-blue-400 hover:bg-blue-500/10 rounded-xl transition-all"
+          >
+            <Icons.Shield /> Super Admin Login
           </button>
-          <button onClick={logout} className="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-red-400 hover:bg-red-500/10 rounded-xl transition-all group">
+
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-red-400 hover:bg-red-500/10 rounded-xl transition-all group"
+          >
             <Icons.Logout /> Logout Session
           </button>
         </div>

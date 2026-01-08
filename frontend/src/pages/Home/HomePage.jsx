@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast';
 import {
   BarChart3,
   Brain,
@@ -88,6 +89,31 @@ const HomePage = ({ user }) => {
     },
   ];
 
+  const handleModuleClick = (module) => {
+    // Check only for Mock Interview Bot
+    if (module.title === "Mock Interview Bot") {
+      const isLargeScreen = window.innerWidth >= 1024;
+
+      if (!isLargeScreen) {
+      toast.error(
+        "This is enabled only for larger device like laptop or desktop",
+        {
+          duration: 3000,
+          style: {
+            borderRadius: '12px',
+            background: '#0f172a',
+            color: '#fff',
+            fontWeight: '500'
+          }
+        }
+      );
+        return;
+      }
+    }
+
+    navigate(module.path);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 relative pb-20 pt-20">
       {/* Dashboard Content */}
@@ -174,7 +200,7 @@ const HomePage = ({ user }) => {
             {modules.map((m, i) => (
               <div
                 key={i}
-                onClick={() => navigate(m.path)}
+                onClick={() => handleModuleClick(m)}
                 className="group cursor-pointer bg-white rounded-2xl border border-slate-200 p-8 flex flex-col transition-all duration-300 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1"
               >
                 <div className="mb-6 w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
