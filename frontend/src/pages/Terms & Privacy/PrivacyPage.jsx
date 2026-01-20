@@ -191,7 +191,7 @@ export default function PrivacyPage() {
                   Email us at <a href={`mailto:${contactEmail}`} className="text-indigo-600 font-bold cursor-pointer hover:underline">{contactEmail}</a>
                 </p>
                 <Link
-                  to="/"
+                  to="/dashboard"
                   className="px-8 py-3 bg-gray-900 text-white font-bold rounded-2xl hover:bg-indigo-600 transition-all cursor-pointer shadow-lg active:scale-95"
                 >
                   Accept & Close

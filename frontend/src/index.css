@@ -19,6 +19,20 @@
   }
 }
 
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-fast {
+  animation: marquee 20s linear infinite;
+}
+
+.animate-marquee-slow {
+  animation: marquee 40s linear infinite;
+}
+
 /* Custom Scrollbar for Chat Window */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;

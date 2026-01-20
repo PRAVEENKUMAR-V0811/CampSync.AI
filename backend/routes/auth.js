@@ -4,10 +4,12 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Class = require('../models/Class');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const { protect } = require('../middleware/authMiddleware');
 const axios = require('axios'); 
+const SystemConfig = require('../models/SystemConfig');
 
 // --- EMAIL CONFIGURATION HELPER (API METHOD) ---
 const sendEmail = async (options) => {
@@ -39,34 +41,51 @@ const contactUrl = `${frontendUrl}/contact`;
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
+    expiresIn: '2h',
   });
 };
 
 // ------------------ AUTH ROUTES ------------------
 
-// @desc    Register a new user & Send Welcome Email
+// @desc    Register a new student & Auto-assign Faculty
 // @route   POST /api/auth/signup
 router.post('/signup', async (req, res) => {
-  const { name, gender, email, password, phone, education, college, branch, passingYear, regNo, cgpa, historyOfArrear, currentBacklog, currentSemester } = req.body;
+  const { 
+    name, gender, email, password, phone, education, 
+    branch, passingYear, section, college, regNo, 
+    cgpa, currentSemester, historyOfArrear, currentBacklog 
+  } = req.body;
 
   try {
     const userExists = await User.findOne({ $or: [{ email }, { phone }, { regNo }] });
     if (userExists) return res.status(400).json({ message: 'User already exists' });
 
-    const user = await User.create({
-      name, gender, email, password, phone, education, college, branch, passingYear, regNo,
-      role: 'user',
-      academicUpdatePending: true,
-      pendingData: {
-        cgpa: cgpa || 0,
-        historyOfArrear: historyOfArrear || 'No',
-        currentBacklog: currentBacklog || 0,
-        currentSemester: currentSemester || 1
-      }
+    const classMapping = await Class.findOne({ 
+      education, 
+      branch, 
+      section, 
+      passingYear 
     });
 
-    if (user) {
+    // --- AUTOMATIC FACULTY MAPPING ---
+    // Look for a faculty member mapped to this specific class
+    const assignedFaculty = await User.findOne({
+      role: 'faculty',
+      education,
+      branch,
+      section,
+      passingYear // Or yearOfStudy depending on your mapping preference
+    });
+
+    const user = await User.create({
+      name, gender, email, password, phone, education, branch, 
+      passingYear, section, college, regNo,
+      role: 'user',
+      assignedFaculty: classMapping ? classMapping.faculty : null,
+      academicUpdatePending: true,
+      pendingData: { cgpa, currentSemester, historyOfArrear, currentBacklog }
+    });
+      if (user) {
       // --- WELCOME EMAIL TEMPLATE ---
       const welcomeMessage = `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
@@ -102,7 +121,7 @@ router.post('/signup', async (req, res) => {
           </p>
         </div>
       `;
-
+      }
       // Send email (we don't 'await' this so the user doesn't wait for the email to send before seeing 'Success')
       sendEmail({
         email: user.email,
@@ -110,10 +129,10 @@ router.post('/signup', async (req, res) => {
         message: welcomeMessage
       }).catch(err => console.error("Welcome email failed", err));
 
-      res.status(201).json({ _id: user._id, token: generateToken(user._id) });
-    }
+
+    res.status(201).json({ _id: user._id, token: generateToken(user._id), role: user.role });
   } catch (error) {
-    res.status(500).json({ message: 'Signup failed' });
+    res.status(500).json({ message: 'Signup failed', error: error.message });
   }
 });
 
@@ -152,19 +171,20 @@ router.post('/login', async (req, res) => {
 // @access  Public
 router.post('/forgotpassword', async (req, res) => {
   const { email } = req.body;
+  let user; // ✅ declare here
 
   try {
-    const user = await User.findOne({ email });
+    user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: 'User with that email not found' });
     }
 
-    // Get reset token from user model method
     const resetToken = user.getResetPasswordToken();
-    await user.save();
 
-    // Frontend reset page URL
+    // ✅ IMPORTANT: disable password validation
+    await user.save({ validateBeforeSave: false });
+
     const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`;
 
 
@@ -247,7 +267,7 @@ const message = `
     if (user) {
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
-      await user.save();
+      await user.save({ validateBeforeSave: false });
     }
     res.status(500).json({ message: 'Error sending reset email' });
   }
@@ -281,6 +301,34 @@ router.put('/resetpassword/:resetToken', async (req, res) => {
   } catch (error) {
     console.error('Reset password error:', error);
     res.status(500).json({ message: 'Error resetting password' });
+  }
+});
+
+// Public check for the dashboard
+router.get('/update-status', protect, async (req, res) => {
+  const config = await SystemConfig.findOne({ key: "placement_update_window" });
+  if (!config) return res.json({ isActive: false });
+
+  const now = new Date();
+  const isActive = now >= new Date(config.startTime) && now <= new Date(config.endTime);
+  
+  res.json({ 
+    isActive, 
+    endTime: config.endTime,
+    message: config.message 
+  });
+});
+
+// backend/routes/placement.js
+router.get('/trends', protect, async (req, res) => {
+  try {
+    // Only fetch fields needed for charts to protect student privacy
+    const placementData = await User.find({ role: 'user' })
+      .select('branch passingYear placementStatus packageLPA recentCompany createdAt placedDate offersCount');
+    
+    res.json(placementData);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching trends", error: error.message });
   }
 });
 

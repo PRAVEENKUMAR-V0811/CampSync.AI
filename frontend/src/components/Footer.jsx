@@ -17,11 +17,12 @@ const Footer = () => {
     placement: [
       { name: "Placement Dashboard", path: "/placements/data" },
       { name: "Interview Insights", path: "/company-insights" },
-      { name: "Success Stories", path: "/about-us" },
+      { name: "AI Mock Interview", path: "/interview" },
       { name: "Company Wise Prep", path: "/company-insights" },
     ],
     academics: [
-      { name: "AI Study Materials", path: "/academics/resources" },
+      { name: "Study Materials", path: "/question-bank" },
+      { name: "Upload Material", path: "/academic-papers-upload" },
       { name: "Mock Assessment", path: "/academics/tests" },
       { name: "Subject Roadmap", path: "/academics/roadmap" },
       { name: "AI Doubt Solver", path: "/academics/ai-tutor" },

@@ -1,361 +1,188 @@
-// const User = require('../models/User');
-// const QuestionPaper = require('../QuestionPaper/QuestionPaper');
-
-// // --- PLACEMENT & STUDENT MANAGEMENT FUNCTIONS ---
-
-// // Search student by Register Number for Placement Management
-// const searchStudentByRegNo = async (req, res) => {
-//     try {
-//         const { regNo } = req.params;
-//         // Search by regNo (Ensure your signup route is saving this field now!)
-//         const student = await User.findOne({ regNo, role: 'user' }).select('-password');
-
-//         if (!student) {
-//             return res.status(404).json({ message: "Student not found with that Register Number" });
-//         }
-
-//         // Ownership Check: If student is already managed by another faculty
-//         if (student.managedBy && student.managedBy.toString() !== req.user._id.toString()) {
-//             return res.status(403).json({ 
-//                 message: "This student is already being managed by another faculty member." 
-//             });
-//         }
-
-//         res.json(student);
-//     } catch (error) {
-//         console.error("Search Error:", error);
-//         res.status(500).json({ message: "Server error during search" });
-//     }
-// };
-
-// // Get all students managed by the logged-in faculty/admin
-// const getManagedStudents = async (req, res) => {
-//     try {
-//         // Find users where managedBy is the current logged-in user's ID
-//         const students = await User.find({ managedBy: req.user._id }).select('-password');
-//         res.json(students);
-//     } catch (error) {
-//         console.error("Fetch Managed Students Error:", error);
-//         res.status(500).json({ message: "Error fetching managed students" });
-//     }
-// };
-
-// // Faculty updates placement status
-// const updatePlacementStatus = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const { 
-//             placementStatus, recentCompany, packageLPA, 
-//             jobType, internStipend, offersCount // Changed from noOfOffers to offersCount to match schema
-//         } = req.body;
-
-//         const student = await User.findById(id);
-//         if (!student) return res.status(404).json({ message: "Student not found" });
-
-//         // Enforce Ownership (Only the faculty who first searched/updated them or if they are unmanaged)
-//         if (student.managedBy && student.managedBy.toString() !== req.user._id.toString()) {
-//             return res.status(403).json({ message: "Unauthorized: Managed by another faculty" });
-//         }
-
-//         // Update fields
-//         student.managedBy = req.user._id; 
-//         student.placementStatus = placementStatus || student.placementStatus;
-//         student.recentCompany = recentCompany || student.recentCompany;
-//         student.packageLPA = packageLPA || student.packageLPA;
-//         student.jobType = jobType || student.jobType;
-//         student.internStipend = internStipend || student.internStipend;
-//         student.offersCount = offersCount || student.offersCount;
-
-//         await student.save();
-//         res.json({ message: "Placement details updated successfully" });
-//     } catch (error) {
-//         console.error("Placement Update Error:", error);
-//         res.status(500).json({ message: "Update failed" });
-//     }
-// };
-
-// // View all students who submitted academic updates for approval
-// const getAcademicRequests = async (req, res) => {
-//     try {
-//         // Query based on your schema's boolean flag
-//         const requests = await User.find({ academicUpdatePending: true })
-//                                    .select('name regNo cgpa currentSemester historyOfArrear currentBacklog pendingData');
-//         res.json(requests);
-//     } catch (error) {
-//         res.status(500).json({ message: "Failed to fetch requests" });
-//     }
-// };
-
-// // Verify/Approve or Reject academic updates
-// const verifyAcademicUpdate = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const { approve } = req.body;
-
-//         const student = await User.findById(id);
-//         if (!student) return res.status(404).json({ message: "User not found" });
-
-//         // Only copy data if approved AND pendingData exists
-//         if (approve && student.pendingData) {
-//             // Use logical nullish assignment to prevent crashing if fields are missing
-//             student.cgpa = student.pendingData.cgpa ?? student.cgpa;
-//             student.currentSemester = student.pendingData.currentSemester ?? student.currentSemester;
-//             student.historyOfArrear = student.pendingData.historyOfArrear ?? student.historyOfArrear;
-//             student.currentBacklog = student.pendingData.currentBacklog ?? student.currentBacklog;
-//         }
-
-//         // Reset the flag
-//         student.academicUpdatePending = false;
-        
-//         // Clear the pendingData object properly for Mongoose
-//         student.pendingData = {
-//             cgpa: undefined,
-//             currentSemester: undefined,
-//             historyOfArrear: undefined,
-//             currentBacklog: undefined
-//         };
-
-//         await student.save();
-//         res.json({ message: approve ? "Profile Verified & Updated" : "Update Request Discarded" });
-//     } catch (error) {
-//         console.error("Verification Error:", error);
-//         res.status(500).json({ message: "Verification failed: " + error.message });
-//     }
-// };
-
-// // --- ADMIN & QUESTION PAPER FUNCTIONS ---
-
-// const getAdminStats = async (req, res) => {
-//   try {
-//     const userCount = await User.countDocuments({ role: 'user' });
-//     const totalDocs = await QuestionPaper.countDocuments({});
-//     const approvedDocs = await QuestionPaper.countDocuments({ status: 'Approved' });
-//     const rejectedDocs = await QuestionPaper.countDocuments({ status: 'Rejected' });
-//     const pendingDocs = await QuestionPaper.countDocuments({ status: 'Pending' });
-
-//     res.json({
-//       userCount,
-//       totalDocs,
-//       approvedDocs,
-//       rejectedDocs,
-//       pendingDocs
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Error fetching stats" });
-//   }
-// };
-
-// const getPapersByStatus = async (req, res) => {
-//   try {
-//     const { status } = req.query;
-//     let filter = {};
-
-//     if (status && status !== 'dashboard' && status !== 'All') {
-//       filter = { status: status }; 
-//     }
-
-//     const papers = await QuestionPaper.find(filter)
-//       .populate('uploaded_by_user', 'name email')
-//       .sort({ createdAt: -1 });
-
-//     res.json(papers);
-//   } catch (error) {
-//     res.status(500).json({ message: "Error fetching papers" });
-//   }
-// };
-
-// const updatePaperStatus = async (req, res) => {
-//   const { id } = req.params;
-//   const { status, rejection_reason } = req.body;
-
-//   try {
-//     const updateData = {
-//       status,
-//       approved_by_admin: req.user._id,
-//       approval_date: Date.now(),
-//     };
-
-//     if (status === 'Rejected') {
-//       updateData.rejection_reason = rejection_reason;
-//     }
-
-//     const updatedPaper = await QuestionPaper.findByIdAndUpdate(id, updateData, { new: true });
-
-//     if (!updatedPaper) return res.status(404).json({ message: "Paper not found" });
-
-//     res.json(updatedPaper);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
-// const deletePaper = async (req, res) => {
-//   try {
-//     const paper = await QuestionPaper.findById(req.params.id);
-//     if (!paper) return res.status(404).json({ message: 'Paper not found' });
-
-//     await paper.deleteOne();
-//     res.json({ message: 'Paper deleted successfully' });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
-// module.exports = { 
-//   searchStudentByRegNo,
-//   updatePlacementStatus,
-//   getAcademicRequests,
-//   verifyAcademicUpdate,
-//   getAdminStats, 
-//   getPapersByStatus, 
-//   updatePaperStatus, 
-//   deletePaper,
-//   getManagedStudents
-// };
-
-
 const User = require('../models/User');
 const QuestionPaper = require('../QuestionPaper/QuestionPaper');
+const Class = require('../models/Class');
+const Feedback = require('../models/Feedback');
+const InterviewExperience = require('../models/InterviewExperience');
 
-// --- DASHBOARD STATS ---
+// --- DASHBOARD STATS WITH ADVANCED FILTERING ---
 const getAdminStats = async (req, res) => {
   try {
-    const userCount = await User.countDocuments({ role: 'user' });
-    const adminCount = await User.countDocuments({ role: 'admin' });
-    const facultyCount = await User.countDocuments({ role: 'faculty' });
+    const { branch, section, passingYear } = req.query;
     
-    const totalDocs = await QuestionPaper.countDocuments({});
-    const approvedDocs = await QuestionPaper.countDocuments({ status: 'Approved' });
-    const rejectedDocs = await QuestionPaper.countDocuments({ status: 'Rejected' });
+    let studentQuery = { role: 'user' };
+    if (branch) studentQuery.branch = branch;
+    if (section) studentQuery.section = section;
+    if (passingYear) studentQuery.passingYear = Number(passingYear);
 
-    // Placement Analytics
-    const placementStats = await User.aggregate([
-      { $match: { role: 'user', placementStatus: 'Placed' } },
-      {
-        $group: {
+    const userCount = await User.countDocuments(studentQuery);
+    const facultyCount = await User.countDocuments({ role: 'faculty' });
+    const totalDocs = await QuestionPaper.countDocuments({});
+
+    const placementData = await User.aggregate([
+      { $match: { ...studentQuery, placementStatus: 'Placed' } },
+      { $group: {
           _id: null,
           highestPackage: { $max: "$packageLPA" },
-          averagePackage: { $avg: "$packageLPA" },
-          companies: { $addToSet: "$recentCompany" }
-        }
-      }
+          avgPackage: { $avg: "$packageLPA" },
+          totalPlaced: { $sum: 1 },
+          recruiters: { $addToSet: "$recentCompany" }
+      }}
     ]);
 
-    const stats = placementStats[0] || { highestPackage: 0, averagePackage: 0, companies: [] };
+    const stats = placementData[0] || { highestPackage: 0, avgPackage: 0, totalPlaced: 0, recruiters: [] };
+
+    const toppers = await User.find(studentQuery).sort({ cgpa: -1 }).limit(3).select('name cgpa branch');
+    const topOfferStudent = await User.findOne(studentQuery).sort({ offersCount: -1 }).select('name offersCount regNo');
 
     res.json({
       userCount,
-      totalAdmins: adminCount + facultyCount,
+      facultyCount,
       totalDocs,
-      approvedDocs,
-      rejectedDocs,
-      highestPackage: stats.highestPackage,
-      averagePackage: stats.averagePackage?.toFixed(2),
-      totalCompaniesVisited: stats.companies.length,
-      // Placeholder for feedback count if you have a Feedback model
-      feedbackCount: 0 
+      totalRecruiters: stats.recruiters.length,
+      totalPlaced: stats.totalPlaced,
+      placementPercentage: userCount > 0 ? ((stats.totalPlaced / userCount) * 100).toFixed(1) : 0,
+      toppers,
+      topOfferStudent,
+      highestPackage: stats.highestPackage || 0,
+      avgPackage: stats.avgPackage ? stats.avgPackage.toFixed(2) : 0
     });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching stats" });
+    res.status(500).json({ message: "Stats sync error", error: error.message });
   }
 };
 
-// --- USER CRUD (FOR ADMIN) ---
+// --- FACULTY CREATION ---
+const createFaculty = async (req, res) => {
+  try {
+    const { facultyId, name, email, password, phone, education, branch, gender, passingYear, regNo } = req.body;
 
-const getAllUsers = async (req, res) => {
-  const users = await User.find({}).select('-password');
+    const userExists = await User.findOne({ $or: [{ email }, { facultyId }] });
+    if (userExists) return res.status(400).json({ message: 'Faculty ID or Email already exists' });
+
+    const faculty = await User.create({
+      facultyId,
+      regNo,
+      name,
+      email,
+      password,
+      phone,
+      role: 'faculty',
+      gender: gender || 'male',
+      education: education || 'B.E',
+      branch: branch || 'CSE',
+      college: 'Main Campus',
+      passingYear: passingYear || 0
+    });
+
+    res.status(201).json(faculty);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// --- CLASS MANAGEMENT ---
+const createClass = async (req, res) => {
+  try {
+    const { education, branch, section, passingYear, facultyId } = req.body;
+
+    const className = `${education}-${branch}-${section}-${passingYear}`;
+    
+    // Check if class mapping already exists
+    const existing = await Class.findOne({ className });
+    if (existing) return res.status(400).json({ message: "This Class (Branch/Sec/Year) already exists." });
+
+    // If faculty is provided, check if they are already assigned elsewhere
+    if (facultyId) {
+      const busy = await Class.findOne({ faculty: facultyId });
+      if (busy) return res.status(400).json({ message: "Selected faculty is already assigned to another class." });
+    }
+
+    const newClass = await Class.create({
+      education,
+      branch,
+      section,
+      passingYear: Number(passingYear),
+      className,
+      faculty: facultyId || null // Ensure your Schema has required: false for this to work optionally
+    });
+
+    const populated = await newClass.populate('faculty', 'name email facultyId');
+    res.status(201).json(populated);
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(500).json({ message: "Database Index Conflict: Please drop 'classId_1' index in MongoDB classes collection." });
+    }
+    res.status(500).json({ message: "Server Error: " + error.message });
+  }
+};
+
+const assignFacultyToClass = async (req, res) => {
+  try {
+    const { facultyId, classId } = req.body;
+
+    if (!facultyId || !classId) {
+      return res.status(400).json({ message: "Faculty and Class selection required" });
+    }
+
+    const updatedClass = await Class.findByIdAndUpdate(
+      classId,
+      { faculty: facultyId }, // This is the User _id
+      { new: true }
+    ).populate('faculty', 'name');
+
+    if (!updatedClass) return res.status(404).json({ message: "Class not found" });
+    res.json(updatedClass);
+  } catch (error) {
+    res.status(500).json({ message: "Assignment failed", error: error.message });
+  }
+};
+
+const getClasses = async (req, res) => {
+  try {
+    const classes = await Class.find().populate('faculty', 'name email branch facultyId');
+    res.json(classes);
+  } catch (error) {
+    res.status(500).json({ message: "Fetch failed" });
+  }
+};
+
+const deleteClass = async (req, res) => {
+  await Class.findByIdAndDelete(req.params.id);
+  res.json({ message: "Class mapping removed" });
+};
+
+// --- GENERIC CRUD ---
+const getUsers = async (req, res) => {
+  const users = await User.find({ role: req.query.role })
+    // .populate('assignedFaculty', 'name')
+    .select('-password')
+    .sort({ createdAt: -1 });
   res.json(users);
 };
 
-const createUserAccount = async (req, res) => {
-  const { name, email, password, role, phone, gender, education, college, branch, passingYear } = req.body;
-  const userExists = await User.findOne({ email });
-  if (userExists) return res.status(400).json({ message: 'User already exists' });
-
-  const user = await User.create({
-    name, email, password, role, phone, gender, education, college, branch, passingYear
-  });
-  res.status(201).json(user);
-};
-
 const updateUserAccount = async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (user) {
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.role = req.body.role || user.role;
-    if (req.body.password) user.password = req.body.password;
-    
-    const updatedUser = await user.save();
-    res.json(updatedUser);
-  } else {
-    res.status(404).json({ message: 'User not found' });
-  }
+  const updated = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(updated);
 };
 
 const deleteUserAccount = async (req, res) => {
   const user = await User.findById(req.params.id);
-  if (user) {
-    await user.deleteOne();
-    res.json({ message: 'User removed' });
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  if (user?.role === 'faculty') {
+    await Class.updateMany({ faculty: user._id }, { $set: { faculty: null } });
   }
+  await User.findByIdAndDelete(req.params.id);
+  res.json({ message: "Removed" });
 };
 
-// --- FACULTY/ADMIN SHARED FUNCTIONS ---
-
-const searchStudentByRegNo = async (req, res) => {
-  const student = await User.findOne({ regNo: req.params.regNo, role: 'user' }).select('-password');
-  if (!student) return res.status(404).json({ message: "Student not found" });
-  res.json(student);
-};
-
-const updatePlacementStatus = async (req, res) => {
-  const { id } = req.params;
-  const student = await User.findById(id);
-  if (!student) return res.status(404).json({ message: "Student not found" });
-
-  Object.assign(student, req.body);
-  student.managedBy = req.user._id; 
-  await student.save();
-  res.json({ message: "Placement details updated" });
-};
-
-const getAcademicRequests = async (req, res) => {
-  const requests = await User.find({ academicUpdatePending: true });
-  res.json(requests);
-};
-
-const verifyAcademicUpdate = async (req, res) => {
-  const { id } = req.params;
-  const { approve } = req.body;
-  const student = await User.findById(id);
-
-  if (approve && student.pendingData) {
-    student.cgpa = student.pendingData.cgpa ?? student.cgpa;
-    student.currentSemester = student.pendingData.currentSemester ?? student.currentSemester;
-    student.historyOfArrear = student.pendingData.historyOfArrear ?? student.historyOfArrear;
-    student.currentBacklog = student.pendingData.currentBacklog ?? student.currentBacklog;
-  }
-  student.academicUpdatePending = false;
-  student.pendingData = undefined;
-  await student.save();
-  res.json({ message: approve ? "Verified" : "Rejected" });
-};
-
-// Existing paper logic (Keep as is)
+// --- DOCUMENT / FEEDBACK ---
 const getPapersByStatus = async (req, res) => {
   try {
     const { status } = req.query;
     let filter = {};
-
-    if (status && status !== 'dashboard' && status !== 'All') {
-      filter = { status: status }; 
-    }
+    if (status && status !== 'All') filter.status = status;
 
     const papers = await QuestionPaper.find(filter)
-      .populate('uploaded_by_user', 'name email')
+      .populate('uploaded_by_user', 'name email role')
       .sort({ createdAt: -1 });
 
     res.json(papers);
@@ -364,46 +191,155 @@ const getPapersByStatus = async (req, res) => {
   }
 };
 
-const updatePaperStatus = async (req, res) => {
-  const { id } = req.params;
-  const { status, rejection_reason } = req.body;
-
+const getMyUploads = async (req, res) => {
   try {
-    const updateData = {
-      status,
-      approved_by_admin: req.user._id,
-      approval_date: Date.now(),
-    };
-
-    if (status === 'Rejected') {
-      updateData.rejection_reason = rejection_reason;
-    }
-
-    const updatedPaper = await QuestionPaper.findByIdAndUpdate(id, updateData, { new: true });
-
-    if (!updatedPaper) return res.status(404).json({ message: "Paper not found" });
-
-    res.json(updatedPaper);
+    const papers = await QuestionPaper.find({ uploaded_by_user: req.user._id }).sort({ createdAt: -1 });
+    res.json(papers);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Fetch failed" });
   }
+};
+
+const updatePaperStatus = async (req, res) => {
+  const { status, rejection_reason } = req.body;
+  const updatedPaper = await QuestionPaper.findByIdAndUpdate(
+    req.params.id,
+    {
+      status,
+      rejection_reason,
+      approval_date: Date.now()
+    },
+    { new: true }
+  );
+  res.json(updatedPaper);
 };
 
 const deletePaper = async (req, res) => {
-  try {
-    const paper = await QuestionPaper.findById(req.params.id);
-    if (!paper) return res.status(404).json({ message: 'Paper not found' });
-
-    await paper.deleteOne();
-    res.json({ message: 'Paper deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  await QuestionPaper.findByIdAndDelete(req.params.id);
+  res.json({ message: "Deleted" });
 };
 
-module.exports = { 
-  getAdminStats, searchStudentByRegNo, updatePlacementStatus, 
-  getAcademicRequests, verifyAcademicUpdate, getAllUsers,
-  createUserAccount, updateUserAccount, deleteUserAccount,
-  getPapersByStatus, updatePaperStatus, deletePaper
+const deleteFeedback = async (req, res) => {
+  await Feedback.findByIdAndDelete(req.params.id);
+  res.json({ message: "Deleted" });
+};
+
+const deleteExperience = async (req, res) => {
+  await InterviewExperience.findByIdAndDelete(req.params.id);
+  res.json({ message: "Deleted" });
+};
+
+// --- ACADEMIC VERIFICATION ---
+const verifyAcademicUpdate = async (req, res) => {
+  const { id } = req.params;
+  const { approve } = req.body;
+  const facultyId = req.user._id;
+
+  try {
+    const student = await User.findById(id);
+    if (!student) return res.status(404).json({ message: "Student record not found." });
+
+    // --- NEW AUTHORIZATION LOGIC ---
+    if (req.user.role !== 'admin') {
+      // Check if there is a class matching the student's details assigned to this faculty
+      const isAssigned = await Class.findOne({
+        faculty: facultyId,
+        branch: student.branch,
+        section: student.section,
+        passingYear: student.passingYear,
+        education: student.education
+      });
+
+      if (!isAssigned) {
+        return res.status(403).json({
+          message: "Forbidden: You are not authorized to verify this student. They are not in your assigned class/section."
+        });
+      }
+    }
+    // -------------------------------
+
+    if (approve === true) {
+      if (student.pendingData) {
+        student.cgpa = student.pendingData.cgpa ?? student.cgpa;
+        student.currentSemester = student.pendingData.currentSemester ?? student.currentSemester;
+        student.historyOfArrear = student.pendingData.historyOfArrear ?? student.historyOfArrear;
+        student.currentBacklog = student.pendingData.currentBacklog ?? student.currentBacklog;
+      }
+    }
+
+    student.academicUpdatePending = false;
+    student.pendingData = undefined;
+    await student.save();
+
+    res.status(200).json({ message: "Verification processed successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+// const verifyAcademicUpdate = async (req, res) => {
+//   const { id } = req.params;
+//   const { approve } = req.body;
+//   const facultyId = req.user._id;
+
+//   try {
+//     const student = await User.findById(id);
+//     if (!student) return res.status(404).json({ message: "Student record not found." });
+
+//     if (req.user.role !== 'admin') {
+//       if (!student.assignedFaculty || student.assignedFaculty.toString() !== facultyId.toString()) {
+//         return res.status(403).json({
+//           message: "Forbidden: You are not authorized to verify this student's details as they are not assigned to your class."
+//         });
+//       }
+//     }
+
+//     if (approve === true) {
+//       if (student.pendingData) {
+//         student.cgpa = student.pendingData.cgpa ?? student.cgpa;
+//         student.currentSemester = student.pendingData.currentSemester ?? student.currentSemester;
+//         student.historyOfArrear = student.pendingData.historyOfArrear ?? student.historyOfArrear;
+//         student.currentBacklog = student.pendingData.currentBacklog ?? student.currentBacklog;
+//       } else {
+//         return res.status(400).json({ message: "No pending data found to verify." });
+//       }
+//     }
+
+//     student.academicUpdatePending = false;
+//     student.pendingData = undefined;
+
+//     await student.save();
+
+//     res.status(200).json({
+//       message: approve
+//         ? "Student profile has been successfully verified and updated."
+//         : "Update request has been rejected and cleared.",
+//       student: {
+//         id: student._id,
+//         name: student.name,
+//         academicUpdatePending: student.academicUpdatePending
+//       }
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error during verification process.", error: error.message });
+//   }
+// };
+
+// --- EXPORTS ---
+module.exports = {
+  getAdminStats,
+  createFaculty,
+  createClass,
+  assignFacultyToClass,
+  getClasses,
+  deleteClass,
+  getUsers,
+  updateUserAccount,
+  deleteUserAccount,
+  getPapersByStatus,
+  getMyUploads,
+  updatePaperStatus,
+  deletePaper,
+  deleteFeedback,
+  deleteExperience,
+  verifyAcademicUpdate
 };

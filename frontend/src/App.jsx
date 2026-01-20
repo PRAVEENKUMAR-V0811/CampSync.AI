@@ -11,8 +11,9 @@ import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './pages/Auth/ProtectedRoute';
 import TeamPage from './components/TeamPage';
+import FacultyDashboard from './pages/Admin/FacultyDashboard';
 
-// --- LAZY LOADED PAGES (Performance Optimization) ---
+// --- LAZY LOADED PAGES ---
 // Public Pages
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const ContactUs = lazy(() => import('./pages/Contact/ContactUs'));
@@ -27,7 +28,7 @@ const Signup = lazy(() => import('./pages/Auth/Signup'));
 const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
 
-// Protected User Pages
+// Protected User Pages (Students)
 const HomePage = lazy(() => import('./pages/Home/HomePage'));
 const ProfilePage = lazy(() => import('./pages/Profile/ProfilePage'));
 const CompanyInsightsPage = lazy(() => import('./pages/Company Insights/CompanyInsightsPage'));
@@ -41,18 +42,15 @@ const MyUploads = lazy(() => import('./pages/Academics/MyUploads'));
 // Standalone AI Interview
 const AIMockInterview = lazy(() => import('./pages/AI Interview/AIMockInterview'));
 
-// Admin Pages
+// Admin & Faculty Pages
+// Note: As per your requirement, Faculty now handles Document Approval (previously Admin roles)
 const AdminDashboard = lazy(() => import('../src/pages/Admin/AdminDashboard'));
-const SuperAdminDashboard = lazy(() => import('../src/pages/Admin/SuperAdminDashboard'));
 
 // 404 Page
 const NotFound = lazy(() => import('../src/components/NotFound'));
 
 // --- LAYOUT DEFINITIONS ---
 
-/**
- * MainLayout: Used for pages that require the standard navigation Header and Footer.
- */
 const MainLayout = () => (
   <div className="flex flex-col min-h-screen">
     <ScrollToTop />
@@ -66,24 +64,17 @@ const MainLayout = () => (
   </div>
 );
 
-/**
- * CleanLayout: Used for full-screen experiences (Auth, Interview, 404).
- * No Header or Footer is rendered here.
- */
 const CleanLayout = () => (
   <div className="min-h-screen">
     <ScrollToTop />
     <main>
-      <Suspense>
+      <Suspense fallback={<PageLoader />}>
         <Outlet />
       </Suspense>
     </main>
   </div>
 );
 
-/**
- * PageLoader: Visual feedback during lazy loading transitions.
- */
 const PageLoader = () => (
   <div className="h-screen w-full flex flex-col items-center justify-center bg-[#eff0f7] text-indigo-500">
     <Loader2 className="animate-spin mb-4" size={48} />
@@ -97,16 +88,16 @@ const App = () => {
   const [isAppLoading, setIsAppLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate initial loading time
     const timer = setTimeout(() => {
       setIsAppLoading(false);
-    }, 4000); // 3 seconds total animation
+    }, 4000); 
     return () => clearTimeout(timer);
   }, []);
 
   if (isAppLoading) {
     return <LogoLoader />;
   }
+
   return (
     <>
       <Router>
@@ -122,8 +113,8 @@ const App = () => {
             <Route path="/submit-feedback" element={<SubmitFeedback />} />
             <Route path="/team" element={<TeamPage />} />
 
-            {/* Protected (User) */}
-            <Route element={<ProtectedRoute />}>
+            {/* Protected Student Routes (role: user) */}
+            <Route element={<ProtectedRoute allowedRoles={['user']} />}>
               <Route path="/dashboard" element={<HomePage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/company-insights" element={<CompanyInsightsPage />} />
@@ -134,6 +125,8 @@ const App = () => {
               <Route path="/question-bank" element={<QuestionBank />} />
               <Route path="/my-uploads" element={<MyUploads />} />
             </Route>
+
+            
           </Route>
 
 
@@ -146,15 +139,21 @@ const App = () => {
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/resetpassword/:resetToken" element={<ResetPassword />} />
 
-            {/* Protected Full-Screen (Interview) */}
-            <Route element={<ProtectedRoute />}>
+            {/* Protected Full-Screen (Interview) - Students Only */}
+            <Route element={<ProtectedRoute allowedRoles={['user']} />}>
               <Route path="/interview" element={<AIMockInterview />} />
             </Route>
 
-            {/* Protected Admin Routes */}
+            {/* Protected Admin Routes (role: admin) */}
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/super-admin" element={<SuperAdminDashboard />} />
+            </Route>
+
+
+            {/* Protected Faculty Routes (role: faculty) */}
+            {/* Faculty handles document approval and student management */}
+            <Route element={<ProtectedRoute allowedRoles={['faculty']} />}>
+               <Route path="/faculty" element={<FacultyDashboard />} />
             </Route>
 
             {/* 404 NOT FOUND (Catch-all) */}

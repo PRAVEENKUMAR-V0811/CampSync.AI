@@ -3,9 +3,6 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Login from './Login'; // Adjust path
 import Signup from './Signup'; // Adjust path
-// No need for TestimonialSlider or CompanyScroller here if they are embedded within Login/Signup
-// import TestimonialSlider from '../common/TestimonialSlider';
-// import CompanyScroller from '../common/CompanyScroller';
 
 const AuthPage = () => {
   const location = useLocation();
@@ -27,8 +24,6 @@ const AuthPage = () => {
           )}
         </div>
       </div>
-      {/* Right section for testimonials/companies remains within Login/Signup for now,
-          or you can move it back here if you prefer a single definition. */}
     </div>
   );
 };

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
   BarChart3,
@@ -8,47 +9,61 @@ import {
   Users,
   Building2,
   MessageCircle,
+  TrendingUp,
+  Zap
 } from "lucide-react";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
   CartesianGrid,
-  BarChart,
-  Bar,
-  ResponsiveContainer
+  ResponsiveContainer,
+  AreaChart,
+  Area
 } from "recharts";
+import { API_BASE_URL } from '../../api';
 
 // Import the new Chatbot component
 import Chatbot from './Chatbot';
+import CompanyScroller from '../CompanyScroller';
 
 const HomePage = ({ user }) => {
   const navigate = useNavigate();
   const [chatOpen, setChatOpen] = useState(false);
+  const [trendData, setTrendData] = useState([]);
+  const [loadingTrends, setLoadingTrends] = useState(true);
 
-  // Dummy Data
-  const companyVisits = [
-    { month: "Jan", visits: 12 },
-    { month: "Feb", visits: 18 },
-    { month: "Mar", visits: 25 },
-    { month: "Apr", visits: 20 },
-    { month: "May", visits: 30 },
-  ];
+  // Fetch Trends for the Monthly Hiring Visual
+  useEffect(() => {
+    const fetchTrends = async () => {
+      try {
+        const token = localStorage.getItem('token') || JSON.parse(localStorage.getItem('userInfo'))?.token;
+        const response = await axios.get(`${API_BASE_URL}/api/auth/trends`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setTrendData(response.data);
+      } catch (err) {
+        console.error("Failed to load trends for homepage", err);
+      } finally {
+        setLoadingTrends(false);
+      }
+    };
+    fetchTrends();
+  }, []);
 
-  const topicFrequency = [
-    { topic: "DSA", frequency: 40 },
-    { topic: "OOPs", frequency: 25 },
-    { topic: "DBMS", frequency: 20 },
-    { topic: "OS", frequency: 15 },
-  ];
+  // Process data for the monthly visual
+  const monthlyHiring = useMemo(() => {
+    const placed = trendData.filter(r => r.placementStatus === 'Placed');
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const map = months.map(m => ({ name: m, hires: 0 }));
 
-  const difficultyTrends = [
-    { year: "2021", easy: 30, medium: 50, hard: 20 },
-    { year: "2022", easy: 25, medium: 55, hard: 20 },
-    { year: "2023", easy: 20, medium: 60, hard: 20 },
-  ];
+    placed.forEach(r => {
+      const dateSource = r.placedDate ? new Date(r.placedDate) : new Date(r.createdAt);
+      const mIdx = dateSource.getMonth();
+      map[mIdx].hires += 1;
+    });
+    return map;
+  }, [trendData]);
 
   const modules = [
     {
@@ -95,18 +110,18 @@ const HomePage = ({ user }) => {
       const isLargeScreen = window.innerWidth >= 1024;
 
       if (!isLargeScreen) {
-      toast.error(
-        "This is enabled only for larger device like laptop or desktop",
-        {
-          duration: 3000,
-          style: {
-            borderRadius: '12px',
-            background: '#0f172a',
-            color: '#fff',
-            fontWeight: '500'
+        toast.error(
+          "This is enabled only for larger device like laptop or desktop",
+          {
+            duration: 3000,
+            style: {
+              borderRadius: '12px',
+              background: '#0f172a',
+              color: '#fff',
+              fontWeight: '500'
+            }
           }
-        }
-      );
+        );
         return;
       }
     }
@@ -119,69 +134,63 @@ const HomePage = ({ user }) => {
       {/* Dashboard Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         
-        {/* Overview Section */}
+        {/* Updated Overview Section with Hiring Visual and Scroller */}
         <section className="mb-12">
           <div className="flex items-center gap-2 mb-6">
             <div className="h-8 w-1.5 bg-indigo-600 rounded-full"></div>
             <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              Quick Overview
+              Placement Momentum
             </h2>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Company Visits */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
-                Monthly Company Visits
-              </h3>
-              <div className="h-[180px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={companyVisits}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                    <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
-                    <Line type="monotone" dataKey="visits" stroke="#4F46E5" strokeWidth={3} dot={{fill: '#4F46E5', r: 4}} activeDot={{r: 6}} />
-                  </LineChart>
-                </ResponsiveContainer>
+            {/* Monthly Hiring Trends Visual */}
+            <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+                  Monthly Hiring Velocity
+                </h3>
+                <TrendingUp className="w-5 h-5 text-indigo-500" />
+              </div>
+              <div className="h-[220px] w-full">
+                {loadingTrends ? (
+                  <div className="h-full w-full flex items-center justify-center bg-slate-50 rounded-xl animate-pulse text-slate-400 font-bold">Loading Trends...</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={monthlyHiring}>
+                      <defs>
+                        <linearGradient id="colorHires" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.1}/>
+                          <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                      <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
+                      <Area type="monotone" dataKey="hires" stroke="#4F46E5" fillOpacity={1} fill="url(#colorHires)" strokeWidth={3} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 
-            {/* Topic Frequency */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
-                Topic Frequency
-              </h3>
-              <div className="h-[180px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={topicFrequency}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                    <XAxis dataKey="topic" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                    <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
-                    <Bar dataKey="frequency" fill="#6366F1" radius={[4, 4, 0, 0]} barSize={30} />
-                  </BarChart>
-                </ResponsiveContainer>
+            {/* Industry Partners / Company Scroller */}
+            <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl flex flex-col justify-center relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-20">
+                <Zap className="w-20 h-20 text-indigo-400 rotate-12" />
               </div>
-            </div>
-
-            {/* Difficulty Trends */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
-                Difficulty Trends
-              </h3>
-              <div className="h-[180px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={difficultyTrends}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                    <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                    <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
-                    <Bar dataKey="easy" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} barSize={30} />
-                    <Bar dataKey="medium" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} barSize={30} />
-                    <Bar dataKey="hard" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={30} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="relative z-10">
+                <h3 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em] mb-4">
+                  Top Recruiters
+                </h3>
+                <h2 className="text-2xl font-black text-white mb-8 tracking-tight">
+                  Connected with <br />Global Leaders
+                </h2>
+                
+                <div className="space-y-6">
+                   <CompanyScroller direction="ltr" speed="medium" theme="dark" />
+                </div>
               </div>
             </div>
           </div>

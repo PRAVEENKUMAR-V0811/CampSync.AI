@@ -18,6 +18,8 @@ const Signup = ({ onSwitchToLogin }) => {
   const [college, setCollege] = useState('');
   const [branch, setBranch] = useState('');
   const [passingYear, setPassingYear] = useState('');
+  const [section, setSection] = useState('');
+
   
   // New Fields State
   const [regNo, setRegNo] = useState('');
@@ -43,6 +45,7 @@ const Signup = ({ onSwitchToLogin }) => {
 
   const educationOptions = ["B.E", "B.Tech", "M.E", "M.Tech", "PhD", "MBA"];
   const branchOptions = ["CSE", "CSE(AIML)", "EEE", "ECE", "IT"];
+  const sectionOptions = ["A", "B", "C", "D"];
   const currentYear = new Date().getFullYear();
   const passingYearOptions = Array.from({ length: 10 }, (_, i) => currentYear + 5 - i);
 
@@ -117,7 +120,7 @@ const Signup = ({ onSwitchToLogin }) => {
       isValid = false;
     } else setTermsError('');
 
-    if (!name || !gender || !email || !education || !college || !branch || !passingYear || !phone || !password || !confirmPassword || !regNo) {
+    if (!name || !gender || !email || !education || !college || !branch || !passingYear || !phone || !password || !confirmPassword || !regNo || !section) {
       setSignupError('Please fill out all required fields.');
       isValid = false;
     }
@@ -129,7 +132,7 @@ const Signup = ({ onSwitchToLogin }) => {
           `${API_BASE_URL}/api/auth/signup`,
           {
             name, gender, email, password, phone,
-            education, college, branch,
+            education, college, branch, section,
             passingYear: parseInt(passingYear),
             regNo,
             cgpa: parseFloat(cgpa),
@@ -314,6 +317,18 @@ const Signup = ({ onSwitchToLogin }) => {
                     {branchOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                </div>
+               <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">Section</label>
+                  <select
+                    required
+                    value={section}
+                    onChange={(e) => setSection(e.target.value)}
+                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none"
+                  >
+                    <option value="" disabled>Select Section</option>
+                    {sectionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+              </div>
                <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">Passing Year</label>
                   <select required disabled={isLoading} value={passingYear} onChange={(e) => setPassingYear(e.target.value)} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none">

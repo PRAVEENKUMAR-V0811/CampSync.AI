@@ -1,16 +1,40 @@
 import React, { useState } from "react";
 import emailjs from "@emailjs/browser";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion"; // Required for scroll animations
 import { 
   Target, Cpu, BarChart, BookOpen, UserCheck, 
   MessageSquare, Briefcase, TrendingUp, Users, 
-  Award, Star, Send, Layout 
+  Award, Star, Send, Layout, Linkedin, MessageSquareQuote, GraduationCap, Mail
 } from 'lucide-react';
 import bgimage from '../assets/MeetCampSync.png';
+import founder from '../assets/IMG_3269.jpg';
 
 const AboutUs = () => {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [status, setStatus] = useState("");
+
+  const teamData = {
+    founder: {
+        name: "Mr. V. Praveen Kumar",
+        education: "B.E AIML",
+        role: "Founder & CEO",
+        image: founder,
+        message: "CampSync.AI was born out of a simple observation: the gap between academic learning and corporate expectations is widening. Our mission is to empower every student with AI-driven insights to navigate their career path with confidence and clarity. We aren't just building a tool; we're building a bridge to the future.",
+        linkedin: "#"
+    },
+    coFounders: [
+        { name: "Leadership Member One", role: "Chief Technical Officer", image: "https://via.placeholder.com/300x350", linkedin: "#" },
+        { name: "Leadership Member Two", role: "Chief Operating Officer", image: "https://via.placeholder.com/300x350", linkedin: "#" }
+    ],
+    facultyMentors: [
+        { name: "Dr. Mentor One", dept: "Dept. of Computer Science", title: "Professor & Head", image: "https://via.placeholder.com/200x200" },
+        { name: "Dr. Mentor Two", dept: "Dept. of Information Technology", title: "Associate Professor", image: "https://via.placeholder.com/200x200" },
+        { name: "Dr. Mentor Three", dept: "Placement Cell", title: "Coordinator", image: "https://via.placeholder.com/200x200" },
+        { name: "Dr. Mentor Four", dept: "Dept. of EEE", title: "Asst. Professor", image: "https://via.placeholder.com/200x200" },
+        { name: "Dr. Mentor Five", dept: "Dept. of AI & ML", title: "Senior Faculty", image: "https://via.placeholder.com/200x200" }
+    ]
+  };
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -84,7 +108,7 @@ const AboutUs = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative h-[70vh] flex items-center justify-center overflow-hidden bg-indigo-950">
         <div className="absolute inset-0 z-0 opacity-20">
@@ -97,7 +121,7 @@ const AboutUs = () => {
             <Cpu size={16} className="text-sky-400 animate-pulse" />
             <span className="text-sky-400 text-sm font-bold tracking-widest uppercase">The Future of Campus Life</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6 tracking-tighter">
             Bridging Academics <br />& <span className="text-indigo-600">Placements</span>
           </h1>
           <p className="text-lg md:text-xl to-slate-50 max-w-2xl mx-auto leading-relaxed">
@@ -110,9 +134,15 @@ const AboutUs = () => {
       {/* Mission Section */}
       <section className="py-24 px-6 bg-white relative">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
-          <div className="lg:w-1/2 space-y-6">
+          <motion.div 
+            initial={{ x: -100, opacity: 0 }}
+            whileInView={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="lg:w-1/2 space-y-6"
+          >
             <div className="h-1 w-20 bg-sky-500 rounded-full"></div>
-            <h2 className="text-4xl font-bold text-slate-900">Our Mission</h2>
+            <h2 className="text-4xl font-bold text-slate-900 tracking-tight">Our Mission</h2>
             <p className="text-lg text-slate-600 leading-relaxed">
               In today's hyper-competitive landscape, hard work isn't enough you need <strong>Smart Preparation.</strong> CampSync.AI was founded to bridge the critical gap between academic learning and industry demands.
             </p>
@@ -123,8 +153,14 @@ const AboutUs = () => {
               <span>Learn about our technology</span>
               <TrendingUp size={20} className="group-hover:translate-x-1 transition-transform" />
             </div>
-          </div>
-          <div className="lg:w-1/2 grid grid-cols-2 gap-4">
+          </motion.div>
+          <motion.div 
+            initial={{ x: 100, opacity: 0 }}
+            whileInView={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="lg:w-1/2 grid grid-cols-2 gap-4"
+          >
             <div className="bg-slate-50 p-8 rounded-3xl space-y-3 border border-slate-100">
                 <Target className="text-indigo-600" size={32} />
                 <h4 className="font-bold text-slate-900">Precision</h4>
@@ -135,7 +171,7 @@ const AboutUs = () => {
                 <h4 className="font-bold">Community</h4>
                 <p className="text-sm text-indigo-100">Built by students, for students and alumni.</p>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -143,27 +179,166 @@ const AboutUs = () => {
       <section className="py-24 px-6 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-4xl font-bold text-slate-900">Comprehensive AI Ecosystem</h2>
+            <h2 className="text-4xl font-bold text-slate-900 tracking-tight">Comprehensive AI Ecosystem</h2>
             <p className="text-slate-500 max-w-2xl mx-auto">Everything you need to navigate college life and launch your career under one roof.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((f, i) => (
-              <div key={i} className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer group">
+              <motion.div 
+                key={i} 
+                initial={{ y: 50, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer group"
+              >
                 <div className={`${f.bg} ${f.color} w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                   <f.icon size={28} />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-3">{f.title}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{f.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* --- TEAM SECTION INTEGRATION --- */}
+      
+      {/* Founder Section */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <motion.div 
+            initial={{ y: 30, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl font-bold text-slate-900 tracking-tight">The Visionaries</h2>
+            <p className="text-slate-500 mt-2">The core team driving innovation at CampSync.AI</p>
+          </motion.div>
+
+          <motion.div 
+             initial={{ x: -50, opacity: 0 }}
+             whileInView={{ x: 0, opacity: 1 }}
+             viewport={{ once: true }}
+             className="bg-slate-50 rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden"
+          >
+            <div className="flex flex-col lg:flex-row">
+              {/* REFINED SMALLER IMAGE CONTAINER */}
+              <div className="lg:w-2/5 p-8 lg:p-12">
+                <div className="relative group overflow-hidden rounded-[2.5rem] shadow-2xl mx-auto max-w-xs lg:max-w-none">
+                    <img 
+                        src={teamData.founder.image} 
+                        alt={teamData.founder.name} 
+                        className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute bottom-4 left-4">
+                        <a href={teamData.founder.linkedin} className="p-3 bg-white text-indigo-600 rounded-2xl shadow-xl hover:scale-110 transition-transform inline-block">
+                            <Linkedin size={20} />
+                        </a>
+                    </div>
+                </div>
+              </div>
+              <div className="lg:w-3/5 p-8 lg:pr-16 flex flex-col justify-center">
+                <div className="flex items-center gap-2 mb-4">
+                    <Award className="text-emerald-500" size={20} />
+                    <span className="text-emerald-600 font-bold tracking-widest uppercase text-xs">Founder Spotlight</span>
+                </div>
+                <h2 className="text-3xl font-black text-slate-900 mb-1">{teamData.founder.name} <span className="text-slate-400 text-sm ml-2">({teamData.founder.education})</span></h2>
+                <p className="text-indigo-600 font-bold text-lg mb-6">{teamData.founder.role}</p>
+                
+                <div className="relative">
+                    <MessageSquareQuote className="absolute -top-6 -left-6 text-slate-200 h-12 w-12 -z-0 opacity-50" />
+                    <p className="text-slate-600 text-lg italic leading-relaxed relative z-10">
+                        "{teamData.founder.message}"
+                    </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Leadership Team Section */}
+      <section className="py-24 px-6 bg-slate-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+              <h3 className="text-3xl font-bold text-slate-900 tracking-tight">The Leadership Team</h3>
+              <p className="text-slate-500 mt-2">Co-founders leading technology and operations.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+              {teamData.coFounders.map((member, index) => (
+                  <motion.div 
+                    key={index} 
+                    initial={{ x: index % 2 === 0 ? -50 : 50, opacity: 0 }}
+                    whileInView={{ x: 0, opacity: 1 }}
+                    viewport={{ once: true }}
+                    className="group bg-white p-4 rounded-[2.5rem] shadow-lg border border-slate-100 hover:shadow-xl transition-all"
+                  >
+                      <img 
+                          src={member.image} 
+                          alt={member.name} 
+                          className="w-full h-64 object-cover rounded-[2rem] mb-6 grayscale group-hover:grayscale-0 transition-all duration-500"
+                      />
+                      <div className="text-center pb-4 px-4">
+                          <h4 className="text-xl font-bold text-slate-900">{member.name}</h4>
+                          <p className="text-indigo-600 font-medium text-sm mb-4">{member.role}</p>
+                          <div className="flex justify-center">
+                              <a href={member.linkedin} className="p-2 bg-slate-50 text-slate-400 rounded-full hover:bg-indigo-600 hover:text-white transition-colors">
+                                  <Linkedin size={16} />
+                              </a>
+                          </div>
+                      </div>
+                  </motion.div>
+              ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Faculty Council Section - 5 CONTAINERS */}
+      <section className="py-24 px-6 bg-slate-900 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
+        <div className="max-w-7xl mx-auto relative z-10">
+            <div className="text-center mb-16">
+                <div className="inline-flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full mb-4 border border-white/10">
+                    <GraduationCap className="text-indigo-400" size={20} />
+                    <span className="text-indigo-300 font-bold text-xs uppercase tracking-widest">Academic Council</span>
+                </div>
+                <h3 className="text-3xl lg:text-5xl font-black mb-4 tracking-tighter">Faculty Mentors</h3>
+                <p className="text-slate-400 max-w-xl mx-auto text-sm md:text-base">Providing strategic guidance and academic oversight to ensure student success.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                {teamData.facultyMentors.map((mentor, index) => (
+                    <motion.div 
+                        key={index} 
+                        initial={{ y: 30, opacity: 0 }}
+                        whileInView={{ y: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        viewport={{ once: true }}
+                        className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-[2.5rem] text-center hover:bg-white/10 transition-colors group"
+                    >
+                        <img 
+                            src={mentor.image} 
+                            alt={mentor.name} 
+                            className="w-20 h-20 rounded-2xl mx-auto mb-6 object-cover border-2 border-indigo-500/30 group-hover:border-indigo-500 transition-colors"
+                        />
+                        <h5 className="text-white font-bold text-lg mb-1">{mentor.name}</h5>
+                        <p className="text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-3">{mentor.title}</p>
+                        <p className="text-slate-500 text-xs font-medium leading-tight">{mentor.dept}</p>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+      </section>
+
+      {/* --- END TEAM SECTION INTEGRATION --- */}
+
       {/* Impact Stats Section */}
       <section className="py-24 px-6 bg-indigo-900 text-white overflow-hidden relative">
         <div className="max-w-6xl mx-auto relative z-10 text-center">
-          <h2 className="text-4xl font-bold mb-16">Real Impact, Real Numbers</h2>
+          <h2 className="text-4xl font-bold mb-16 tracking-tight">Real Impact, Real Numbers</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               { label: "Companies Visited", val: "150+", icon: Briefcase, color: "text-sky-400" },
@@ -173,7 +348,7 @@ const AboutUs = () => {
             ].map((s, i) => (
               <div key={i} className="p-8 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group">
                 <s.icon className={`${s.color} mx-auto mb-4 group-hover:scale-110 transition-transform`} size={32} />
-                <p className="text-4xl font-black mb-2">{s.val}</p>
+                <p className="text-4xl font-black mb-2 tracking-tighter">{s.val}</p>
                 <p className="text-sm text-indigo-200 font-medium uppercase tracking-wider">{s.label}</p>
               </div>
             ))}
@@ -186,8 +361,8 @@ const AboutUs = () => {
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <h2 className="text-4xl font-bold text-slate-900">Connect With Us</h2>
-              <p className="text-slate-600 leading-relaxed">
+              <h2 className="text-4xl font-bold text-slate-900 tracking-tight">Connect With Us</h2>
+              <p className="text-slate-600 leading-relaxed text-sm md:text-base">
                 Have questions about our AI features or want to collaborate? Our team is ready to help you sync your career.
               </p>
               <div className="space-y-4 pt-4">

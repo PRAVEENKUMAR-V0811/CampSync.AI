@@ -24,6 +24,11 @@ const questionPaperSchema = mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    uploaded_by_role: {
+      type: String,
+      enum: ['admin', 'faculty', 'user'],
+      required: true
+    },
     status: {
       type: String,
       enum: ['Pending', 'Approved', 'Rejected'],

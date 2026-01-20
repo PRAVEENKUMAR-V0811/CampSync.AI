@@ -24,7 +24,7 @@ const Login = () => {
   const validatePassword = (pwd) => {
     if (!pwd) { setPasswordError("Password is required"); return false; }
     if (pwd.length < 8) { setPasswordError("Minimum 8 characters"); return false; }
-    if (!/[A-Z]/.test(pwd)) { setPasswordError("Need one uppercase letter"); return false; }
+    // if (!/[A-Z]/.test(pwd)) { setPasswordError("Need one uppercase letter"); return false; }
     if (!/\d/.test(pwd)) { setPasswordError("Need one number"); return false; }
     setPasswordError('');
     return true;
@@ -56,11 +56,8 @@ const Login = () => {
 
         setTimeout(() => {
           if (data.role === 'admin') navigate('/admin');
-          else if (attemptingAdminLogin && data.role !== 'admin') {
-              setLoginError('You are not authorized as an administrator.');
-              toast.error('Unauthorized Access');
-          }
-          else navigate('/dashboard');
+          else if (data.role === 'faculty') navigate('/faculty');
+          else navigate('/dashboard'); // Student dashboard
         }, 500);
       } catch (error) {
         const errorMessage = error.response?.data?.message || "Invalid credentials";

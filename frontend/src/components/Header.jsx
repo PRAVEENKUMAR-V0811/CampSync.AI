@@ -76,9 +76,13 @@ const Header = () => {
                     {/* <span className="text-2xl font-extrabold tracking-tight text-indigo-950">
                         Camp<span className='text-sky-500'>Sync.ai</span>
                     </span> */}
-                    <span className="text-xs mt-2 text-slate-500 font-medium tracking-wide">
+                    {/* <span className="text-xs mt-2 text-slate-500 font-medium tracking-wide">
                         INTELLIGENT CAMPUS MANAGEMENT
-                    </span>
+                    </span> */}
+                    <div className="hidden sm:block">
+                            <p className="text-sm font-black text-slate-900 leading-none">CampSync.AI</p>
+                            <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Intelligent Campus Management</p>
+                    </div>
                 </div>
 
                 {/* Desktop Navigation (Hidden on small/medium screens) */}

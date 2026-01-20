@@ -1,11 +1,24 @@
+// src/components/CompanyInsightsPage.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import InterviewExperienceCard from './InterviewExperienceCard';
 import { Toaster, toast } from 'react-hot-toast';
-import { FaFilter, FaSearch, FaSpinner } from 'react-icons/fa';
 import { API_BASE_URL } from '../../api';
-import { Search, Filter, Briefcase, MessageSquare, Sparkles, Loader2 } from 'lucide-react';
+import { 
+  Search, 
+  Filter, 
+  Briefcase, 
+  MessageSquare, 
+  Loader2, 
+  PlusCircle, 
+  Video, 
+  Sparkles,
+  ArrowUpRight,
+  ChevronDown
+} from 'lucide-react';
 
 const CompanyInsightsPage = () => {
+  const navigate = useNavigate();
   const [experiences, setExperiences] = useState([]);
   const [filteredExperiences, setFilteredExperiences] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -16,16 +29,14 @@ const CompanyInsightsPage = () => {
 
   const fetchExperiences = async () => {
     setLoading(true);
-    setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/api/experiences${selectedCompany ? `?companyName=${selectedCompany}` : ''}`);
-      if (!response.ok) throw new Error('Failed to fetch experiences');
+      if (!response.ok) throw new Error('Failed');
       const data = await response.json();
       setExperiences(data);
       setFilteredExperiences(data);
     } catch (err) {
       setError('Could not load experiences.');
-      toast.error('Failed to load experiences.');
     } finally {
       setLoading(false);
     }
@@ -36,9 +47,7 @@ const CompanyInsightsPage = () => {
       const response = await fetch(`${API_BASE_URL}/api/experiences/companies`);
       const data = await response.json();
       setCompanies(data);
-    } catch (err) {
-      toast.error('Failed to load companies.');
-    }
+    } catch (err) { console.error(err); }
   };
 
   useEffect(() => {
@@ -47,13 +56,12 @@ const CompanyInsightsPage = () => {
   }, [selectedCompany]);
 
   useEffect(() => {
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const term = searchTerm.toLowerCase();
     const results = experiences.filter(exp =>
-      exp.companyName.toLowerCase().includes(lowerCaseSearchTerm) ||
-      exp.role.toLowerCase().includes(lowerCaseSearchTerm) ||
-      exp.focusSkills.toLowerCase().includes(lowerCaseSearchTerm) ||
-      exp.interviewTopics.toLowerCase().includes(lowerCaseSearchTerm) ||
-      (exp.anonymous === "No" && exp.name.toLowerCase().includes(lowerCaseSearchTerm))
+      exp.companyName.toLowerCase().includes(term) ||
+      exp.role.toLowerCase().includes(term) ||
+      exp.focusSkills.toLowerCase().includes(term) ||
+      exp.interviewTopics.toLowerCase().includes(term)
     );
     setFilteredExperiences(results);
   }, [searchTerm, experiences]);
@@ -67,85 +75,101 @@ const CompanyInsightsPage = () => {
       const updatedData = await response.json();
       setExperiences(prev => prev.map(exp => exp._id === experienceId ? updatedData.experience : exp));
       toast.success(`${type}d successfully!`);
-    } catch (err) {
-      toast.error(`Failed to ${type}.`);
-    }
+    } catch (err) { toast.error(`Failed.`); }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden pb-20">
       <Toaster position="top-right" />
       
-      {/* Background Decor Consistency */}
-      <div className="absolute top-0 left-0 w-full h-[500px] z-0 pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[60%] h-[100%] bg-sky-100/50 rounded-full blur-[120px]"></div>
-        <div className="absolute top-0 -right-[10%] w-[50%] h-[80%] bg-indigo-100/50 rounded-full blur-[100px]"></div>
+      {/* Dynamic Background Decor - Slightly reduced opacity */}
+      <div className="absolute top-0 left-0 w-full h-[400px] z-0 pointer-events-none">
+        <div className="absolute -top-[5%] -left-[5%] w-[50%] h-[100%] bg-indigo-100/30 rounded-full blur-[100px]"></div>
+        <div className="absolute top-0 -right-[5%] w-[40%] h-[80%] bg-blue-100/30 rounded-full blur-[100px]"></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 pt-28 md:pt-32 max-w-7xl">
+      <div className="relative z-10 container mx-auto px-4 pt-20 md:pt-24 max-w-7xl">
         
-        {/* Header Section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm mb-4">
-             <Briefcase className="text-indigo-600" size={32} />
+        {/* Compact Hero Section */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-100 mb-4 cursor-pointer hover:shadow-md transition-shadow">
+             <Sparkles size={14} className="text-amber-500 cursor-pointer" />
+             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer">Platform Insights</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
-            Company Insights
+          
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tighter mb-4 cursor-pointer">
+            Company <span className="text-indigo-600 cursor-pointer">Insights</span>
           </h1>
-          <p className="text-slate-500 font-medium max-w-2xl mx-auto">
-            Learn from the experiences of others. Real interview questions, rounds, and outcomes from top-tier recruiters.
+          
+          <p className="text-slate-500 font-bold text-base md:text-lg max-w-xl mx-auto mb-8 cursor-pointer">
+            Real interview questions and outcomes from the community.
           </p>
+
+          {/* Compact Action Row */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+            <button 
+              onClick={() => navigate('/share-experience')}
+              className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95 cursor-pointer shadow-md group"
+            >
+              <PlusCircle size={16} className="cursor-pointer group-hover:rotate-90 transition-transform" />
+              <span className="cursor-pointer">Share Experience</span>
+            </button>
+            
+            <button 
+              onClick={() => navigate('/mock-interview')}
+              className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-800 hover:shadow-lg transition-all active:scale-95 cursor-pointer shadow-md"
+            >
+              <Video size={16} className="cursor-pointer" />
+              <span className="cursor-pointer">Mock Interview</span>
+            </button>
+          </div>
         </div>
 
-        {/* Floating Search & Filter Console */}
-        <div className="bg-white/80 backdrop-blur-xl p-4 rounded-[32px] shadow-xl shadow-slate-200/60 border border-white mb-12 flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+        {/* Unified Search & Filter Row */}
+        <div className="bg-white p-2 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 mb-12 flex flex-row items-center gap-2 max-w-4xl mx-auto">
+          <div className="flex-1 relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors pointer-events-none">
+              <Search size={18} className="cursor-pointer" />
+            </div>
             <input
               type="text"
-              placeholder="Search by role, skills, or topics..."
+              placeholder="Search by company, role..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-50 rounded-2xl focus:border-indigo-600 focus:outline-none transition-all font-medium text-slate-700 cursor-pointer shadow-inner"
+              className="w-full pl-11 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all font-bold text-slate-700 hover:cursor-text text-sm placeholder:text-slate-400"
             />
           </div>
 
-          <div className="md:w-1/3 relative">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+          <div className="w-1/3 md:w-1/4 relative group hidden sm:block">
             <select
               value={selectedCompany}
               onChange={(e) => setSelectedCompany(e.target.value)}
-              className="w-full pl-12 pr-10 py-4 bg-white border-2 border-slate-50 rounded-2xl focus:border-indigo-600 focus:outline-none appearance-none font-bold text-slate-700 cursor-pointer shadow-inner"
+              className="w-full pl-4 pr-10 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:outline-none appearance-none font-black text-slate-700 cursor-pointer text-xs uppercase tracking-tighter"
             >
               <option value="">All Companies</option>
               {companies.map((company) => (
-                <option key={company} value={company}>{company}</option>
+                <option key={company} value={company} className="cursor-pointer font-bold">{company}</option>
               ))}
             </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronDown size={16} className="cursor-pointer" />
+            </div>
           </div>
         </div>
 
+        {/* Content Section */}
         {loading ? (
-          <div className="flex flex-col justify-center items-center h-64">
-            <Loader2 className="animate-spin text-indigo-600 mb-4" size={48} />
-            <p className="text-xl font-bold text-slate-400 animate-pulse">Gathering insights...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center bg-white p-12 rounded-[32px] border-2 border-red-50 shadow-lg max-w-lg mx-auto">
-            <div className="text-red-500 mb-4 text-4xl font-bold">!</div>
-            <p className="text-slate-800 font-bold mb-2">{error}</p>
-            <button onClick={fetchExperiences} className="text-indigo-600 font-bold underline cursor-pointer">Try Refreshing</button>
+          <div className="flex flex-col justify-center items-center py-20">
+            <Loader2 className="animate-spin text-indigo-600 mb-4 cursor-pointer" size={50} />
+            <p className="text-lg font-black text-slate-300 animate-pulse tracking-widest uppercase cursor-pointer">Loading...</p>
           </div>
         ) : filteredExperiences.length === 0 ? (
-          <div className="text-center py-20 bg-white/50 rounded-[40px] border-2 border-dashed border-slate-200">
-            <div className="bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-               <MessageSquare size={32} className="text-slate-400" />
-            </div>
-            <p className="text-2xl font-black text-slate-800 mb-2">No Experiences Found</p>
-            <p className="text-slate-500 font-medium">Try adjusting your search or filters.</p>
+          <div className="text-center py-20 bg-white/40 rounded-[40px] border-2 border-dashed border-slate-200">
+            <MessageSquare size={50} className="text-slate-200 mx-auto mb-4 cursor-pointer" />
+            <p className="text-xl font-black text-slate-800 cursor-pointer">No Results Found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
             {filteredExperiences.map((experience) => (
               <InterviewExperienceCard
                 key={experience._id}

@@ -15,6 +15,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const placementRoutes = require('./routes/placementRoutes');
 const aiRoutes = require('./routes/aiRoutes'); // <--- NEW AI ROUTE FILE
+const facultyRoutes = require('./routes/facultyRoutes');
 
 // Ensure 'uploads' folder exists
 const uploadDir = path.join(__dirname, 'uploads');
@@ -46,6 +47,7 @@ app.use('/api/experiences', interviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/placements', placementRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/faculty', facultyRoutes);
 
 // AI Logic (Refactored)
 app.use('/api', aiRoutes); // This covers both /api/interview and /api/chatbot

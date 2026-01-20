@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Feedback = require('../models/Feedback');
-const { protect, admin } = require('../middleware/authMiddleware'); // Your existing auth middleware
+const { protect, admin, authorize } = require('../middleware/authMiddleware'); // Your existing auth middleware
 
 // @desc    Submit feedback (User)
 // @route   POST /api/feedback
@@ -31,6 +31,12 @@ router.get('/all', protect, admin, async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
   }
+});
+
+// Delete feedback (called by admin dashboard)
+router.delete('/:id', protect, authorize('admin'), async (req, res) => {
+    await Feedback.findByIdAndDelete(req.params.id);
+    res.json({ message: "Feedback deleted" });
 });
 
 module.exports = router;
