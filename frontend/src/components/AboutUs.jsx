@@ -8,7 +8,7 @@ import {
   Award, Star, Send, Layout, Linkedin, MessageSquareQuote, GraduationCap, Mail
 } from 'lucide-react';
 import bgimage from '../assets/MeetCampSync.png';
-import founder from '../assets/IMG_3269.jpg';
+import founder from '../assets/founder.jpg';
 
 const AboutUs = () => {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });

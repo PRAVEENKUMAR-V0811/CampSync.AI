@@ -10,7 +10,6 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './pages/Auth/ProtectedRoute';
-import TeamPage from './components/TeamPage';
 import FacultyDashboard from './pages/Admin/FacultyDashboard';
 
 // --- LAZY LOADED PAGES ---
@@ -111,7 +110,6 @@ const App = () => {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/submit-feedback" element={<SubmitFeedback />} />
-            <Route path="/team" element={<TeamPage />} />
 
             {/* Protected Student Routes (role: user) */}
             <Route element={<ProtectedRoute allowedRoles={['user']} />}>
