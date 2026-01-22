@@ -70,15 +70,9 @@ const Header = () => {
                 {/* Logo Section */}
                 <div 
                     className="flex shrink-0 items-center space-x-3 cursor-pointer group" 
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/dashboard')}
                 >
                     <img src={logo} alt="Logo" className="h-12 w-auto group-hover:scale-110 transition-transform duration-300" />
-                    {/* <span className="text-2xl font-extrabold tracking-tight text-indigo-950">
-                        Camp<span className='text-sky-500'>Sync.ai</span>
-                    </span> */}
-                    {/* <span className="text-xs mt-2 text-slate-500 font-medium tracking-wide">
-                        INTELLIGENT CAMPUS MANAGEMENT
-                    </span> */}
                     <div className="hidden sm:block">
                             <p className="text-sm font-black text-slate-900 leading-none">CampSync.AI</p>
                             <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Intelligent Campus Management</p>
@@ -226,8 +220,8 @@ const Header = () => {
                         })}
                     </div>
 
-                    {/* Drawer Footer Actions */}
-                    <div className="mt-8 pt-6 border-t border-slate-100 space-y-3">
+                    {/* Drawer Footer Actions - Added relative z-index to avoid chatbot overlap */}
+                    <div className="mt-8 pt-6 border-t border-slate-100 space-y-3 relative z-[70]">
                         <button 
                             onClick={() => { navigate('/profile'); setIsMobileMenuOpen(false); }}
                             className="flex items-center space-x-4 w-full p-4 text-slate-700 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer font-semibold"
@@ -236,7 +230,11 @@ const Header = () => {
                             <span>My Profile</span>
                         </button>
                         <button 
-                            onClick={() => { console.log('Logout'); setIsMobileMenuOpen(false); }}
+                            onClick={() => { 
+                                console.log('Logging out...'); 
+                                setIsMobileMenuOpen(false); 
+                                navigate('/login'); 
+                            }}
                             className="flex items-center space-x-4 w-full p-4 text-red-600 hover:bg-red-50 rounded-2xl transition-all cursor-pointer font-bold"
                         >
                             <LogOut size={22} />

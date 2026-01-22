@@ -4,6 +4,7 @@ import {
   Github, Linkedin, Twitter, Mail, ArrowUp, 
   ChevronRight, BookOpen, GraduationCap, Cpu 
 } from "lucide-react";
+import toast from 'react-hot-toast';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -32,6 +33,30 @@ const Footer = () => {
       { name: "Submit Feedback", path: "/submit-feedback" },
       { name: "Join Community", path: "/contact" },
     ]
+  };
+
+  // Function to handle navigation with screen size check for the Interview module
+  const handleNavigation = (name, path) => {
+    if (name === "AI Mock Interview") {
+      const isLargeScreen = window.innerWidth >= 1024;
+
+      if (!isLargeScreen) {
+        toast.error(
+          "This is enabled only for larger device like laptop or desktop",
+          {
+            duration: 3000,
+            style: {
+              borderRadius: '12px',
+              background: '#0f172a',
+              color: '#fff',
+              fontWeight: '500'
+            }
+          }
+        );
+        return;
+      }
+    }
+    navigate(path);
   };
 
   return (
@@ -64,10 +89,13 @@ const Footer = () => {
             <ul className="space-y-4">
               {footerLinks.placement.map((link) => (
                 <li key={link.name}>
-                  <Link to={link.path} className="flex items-center group hover:text-white transition-colors cursor-pointer text-sm">
+                  <div 
+                    onClick={() => handleNavigation(link.name, link.path)} 
+                    className="flex items-center group hover:text-white transition-colors cursor-pointer text-sm"
+                  >
                     <ChevronRight size={14} className="mr-2 text-indigo-500 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" />
                     {link.name}
-                  </Link>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -81,10 +109,13 @@ const Footer = () => {
             <ul className="space-y-4">
               {footerLinks.academics.map((link) => (
                 <li key={link.name}>
-                  <Link to={link.path} className="flex items-center group hover:text-white transition-colors cursor-pointer text-sm">
+                  <div 
+                    onClick={() => handleNavigation(link.name, link.path)} 
+                    className="flex items-center group hover:text-white transition-colors cursor-pointer text-sm"
+                  >
                     <ChevronRight size={14} className="mr-2 text-indigo-500 opacity-0 group-hover:opacity-100 transition-all -ml-4 group-hover:ml-0" />
                     {link.name}
-                  </Link>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -102,7 +133,7 @@ const Footer = () => {
                 placeholder="College Email" 
                 className="bg-slate-900 border border-slate-800 rounded-l-xl px-4 py-2.5 w-full focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-sm"
               />
-              <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-r-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/20">
+              <button className="bg-indigo-600 hover:bg-indigo-50 text-white px-4 py-2.5 rounded-r-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/20">
                 <Mail size={18} />
               </button>
             </div>

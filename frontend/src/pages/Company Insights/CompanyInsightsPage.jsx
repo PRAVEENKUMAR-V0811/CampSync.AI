@@ -78,9 +78,31 @@ const CompanyInsightsPage = () => {
     } catch (err) { toast.error(`Failed.`); }
   };
 
+  // Added handleMockInterview with strict screen size check and specific toast UI
+  const handleMockInterview = () => {
+    const isLargeScreen = window.innerWidth >= 1024;
+
+    if (!isLargeScreen) {
+      toast.error(
+        "This is enabled only for larger device like laptop or desktop",
+        {
+          duration: 3000,
+          style: {
+            borderRadius: '12px',
+            background: '#0f172a',
+            color: '#fff',
+            fontWeight: '500'
+          }
+        }
+      );
+      return;
+    }
+    navigate('/interview');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden pb-20">
-      <Toaster position="top-right" />
+      {/* <Toaster position="top-right" /> */}
       
       {/* Dynamic Background Decor - Slightly reduced opacity */}
       <div className="absolute top-0 left-0 w-full h-[400px] z-0 pointer-events-none">
@@ -116,7 +138,7 @@ const CompanyInsightsPage = () => {
             </button>
             
             <button 
-              onClick={() => navigate('/mock-interview')}
+              onClick={handleMockInterview}
               className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-800 hover:shadow-lg transition-all active:scale-95 cursor-pointer shadow-md"
             >
               <Video size={16} className="cursor-pointer" />
