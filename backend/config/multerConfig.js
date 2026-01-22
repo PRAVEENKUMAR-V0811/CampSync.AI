@@ -4,14 +4,14 @@ const path = require('path');
 
 // Check file type
 const checkFileType = (file, cb) => {
-  const filetypes = /pdf|doc|docx/;
+  const filetypes = /pdf|doc|docx|ppt|pptx/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
 
   if (extname && mimetype) {
     return cb(null, true);
   } else {
-    cb(new Error('Only PDF, DOC, and DOCX files are allowed!'));
+    cb(new Error('Only PDF, DOC, DOCX, PPT, and PPTX files are allowed!'));
   }
 };
 
