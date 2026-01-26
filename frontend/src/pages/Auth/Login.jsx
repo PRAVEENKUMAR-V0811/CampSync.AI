@@ -15,19 +15,40 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [emailError, setEmailError] = useState(''); 
   const [attemptingAdminLogin, setAttemptingAdminLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
+  // Define allowed institutional domains
+  const allowedDomains = ['skct.edu.in']; 
+
   const validatePassword = (pwd) => {
     if (!pwd) { setPasswordError("Password is required"); return false; }
     if (pwd.length < 8) { setPasswordError("Minimum 8 characters"); return false; }
-    // if (!/[A-Z]/.test(pwd)) { setPasswordError("Need one uppercase letter"); return false; }
+    // if (!/[A-Z]/.test(pwd)) { setPasswordError("Need one uppercase letter"); return false; } 
     if (!/\d/.test(pwd)) { setPasswordError("Need one number"); return false; }
     setPasswordError('');
     return true;
+  };
+
+  const validateInstitutionalEmail = (email) => {
+    if (!email) return "Email address is required.";
+    
+    // Special exception for the specific admin email
+    if (email.toLowerCase() === 'praveenkumarv0811@gmail.com') {
+      return '';
+    }
+
+    const parts = email.split('@');
+    if (parts.length !== 2) return "Invalid email format.";
+    const domain = parts[1];
+    if (!allowedDomains.includes(domain)) {
+      return `Please use an institutional email from ${allowedDomains.join(' or ')}.`;
+    }
+    return '';
   };
 
   const handlePasswordChange = (e) => {
@@ -37,12 +58,36 @@ const Login = () => {
     else setPasswordError('');
   };
 
+  // Modified: Only update email state, do not validate institutional email here
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    // Clear emailError instantly as user types, it will be validated on submit
+    setEmailError(''); 
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoginError('');
+    setIsLoading(true);
 
-    if (email && validatePassword(password)) {
-      setIsLoading(true);
+    let isValid = true;
+
+    // Validate email for institutional domain ONLY on submit
+    const emailValidationResult = validateInstitutionalEmail(email);
+    if (emailValidationResult) {
+      setEmailError(emailValidationResult);
+      toast.error(emailValidationResult); // Show toast for email error on submit
+      isValid = false;
+    } else {
+      setEmailError('');
+    }
+
+    if (!validatePassword(password)) {
+      isValid = false;
+    }
+
+    if (isValid) {
       try {
         const config = { headers: { 'Content-Type': 'application/json' } };
         const { data } = await axios.post(
@@ -52,7 +97,7 @@ const Login = () => {
         );
 
         login(data);
-        toast.success(`Welcome back!`);
+        toast.success(`Welcome back, ${data.name || data.email}!`); 
 
         setTimeout(() => {
           if (data.role === 'admin') navigate('/admin');
@@ -60,18 +105,20 @@ const Login = () => {
           else navigate('/dashboard'); // Student dashboard
         }, 500);
       } catch (error) {
-        const errorMessage = error.response?.data?.message || "Invalid credentials";
+        const errorMessage = error.response?.data?.message || "Invalid credentials. Please check your email and password.";
         setLoginError(errorMessage);
         toast.error(errorMessage);
       } finally {
         setIsLoading(false);
       }
+    } else {
+      setIsLoading(false); // Ensure loading is false if validation fails
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-white relative">
-      {/* <Toaster position="top-center" reverseOrder={false} /> */}
+      {/* <Toaster position="top-center" reverseOrder={false} />  */}
 
       {/* FIXED LOGO AT TOP LEFT */}
       <div 
@@ -109,12 +156,13 @@ const Login = () => {
               <input
                 type="email"
                 required
-                className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all duration-200 font-medium"
+                className={`w-full px-4 py-4 bg-slate-50 border ${emailError ? 'border-red-500' : 'border-slate-200'} rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all duration-200 font-medium`}
                 placeholder="name@university.edu"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange} 
                 disabled={isLoading}
               />
+              {emailError && <p className="mt-1.5 text-xs font-bold text-red-500 ml-1">{emailError}</p>} 
             </div>
 
             {/* Password Field */}
@@ -149,9 +197,9 @@ const Login = () => {
             {/* Login Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !!emailError || !!passwordError} 
               className={`w-full py-4 rounded-2xl text-white font-bold text-lg shadow-xl shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center gap-3
-                ${isLoading ? 'bg-slate-400 cursor-wait' : 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'}
+                ${isLoading || !!emailError || !!passwordError ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'}
               `}
             >
               {isLoading ? (

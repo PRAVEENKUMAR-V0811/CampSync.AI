@@ -50,11 +50,10 @@ const AdminDashboard = () => {
   const [editId, setEditId] = useState(null);
 
   // NEW: Maintenance Window States
-  const [maintenanceForm, setMaintenanceForm] = useState({
-    startTime: '',
-    endTime: '',
-    message: 'Placement records are being updated by the faculty. Finalized content will be live soon.'
-  });
+const [maintenanceForm, setMaintenanceForm] = useState({
+  isActive: false, // Changed from startTime/endTime
+  message: 'Placement records are being updated by the faculty. Finalized content will be live soon.'
+});
 
   const branches = ["CSE", "CSE(AI & ML)", "CSE(Cyber)", "CSE(IoT)", "AIDS", "EEE", "ECE", "Civil", "Mechanical", "IT"];
   const sections = ["A", "B", "C", "D", "E", "F", "G"];
@@ -126,33 +125,33 @@ const AdminDashboard = () => {
   };
 
   // NEW: Maintenance Window Logic
-  const fetchMaintenanceStatus = async () => {
-    try {
-      const { data } = await axios.get(`${API_BASE_URL}/api/auth/update-status`, { 
-        headers: { Authorization: `Bearer ${user.token}` } 
+const fetchMaintenanceStatus = async () => {
+  try {
+    const { data } = await axios.get(`${API_BASE_URL}/api/auth/update-status`, { 
+      headers: { Authorization: `Bearer ${user.token}` } 
+    });
+    if(data) {
+      setMaintenanceForm({
+        isActive: data.isActive || false,
+        message: data.message || maintenanceForm.message
       });
-      if(data) {
-        setMaintenanceForm({
-          startTime: data.startTime ? new Date(data.startTime).toISOString().slice(0, 16) : '',
-          endTime: data.endTime ? new Date(data.endTime).toISOString().slice(0, 16) : '',
-          message: data.message || maintenanceForm.message
-        });
-      }
-    } catch (e) { console.error("Config fetch failed"); }
-  };
-
-  const handleSetMaintenance = async (e) => {
-    e.preventDefault();
-    const tid = toast.loading("Updating System Configuration...");
-    try {
-      await axios.post(`${API_BASE_URL}/api/admin/set-update-window`, maintenanceForm, { 
-        headers: { Authorization: `Bearer ${user.token}` } 
-      });
-      toast.success("Maintenance window scheduled", { id: tid });
-    } catch (e) {
-      toast.error("Failed to update config", { id: tid });
     }
-  };
+  } catch (e) { console.error("Config fetch failed"); }
+};
+
+const handleSetMaintenance = async (e) => {
+  e.preventDefault();
+  const tid = toast.loading("Updating System Configuration...");
+  try {
+    // Sending the boolean isActive instead of time windows
+    await axios.post(`${API_BASE_URL}/api/admin/set-update-window`, maintenanceForm, { 
+      headers: { Authorization: `Bearer ${user.token}` } 
+    });
+    toast.success(`Maintenance Mode ${maintenanceForm.isActive ? 'Enabled' : 'Disabled'}`, { id: tid });
+  } catch (e) {
+    toast.error("Failed to update config", { id: tid });
+  }
+};
 
   const handleDocAction = async (forcedId = null, type = null) => {
     const id = forcedId || showDocActionModal.id;
@@ -446,45 +445,46 @@ const AdminDashboard = () => {
                           </div>
 
                           <form onSubmit={handleSetMaintenance} className="space-y-10">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                  <Input 
-                                      label="Window Start Time" 
-                                      type="datetime-local" 
-                                      required 
-                                      value={maintenanceForm.startTime} 
-                                      onChange={v => setMaintenanceForm({...maintenanceForm, startTime: v})} 
-                                      icon={<Calendar size={14}/>}
-                                  />
-                                  <Input 
-                                      label="Window End Time" 
-                                      type="datetime-local" 
-                                      required 
-                                      value={maintenanceForm.endTime} 
-                                      onChange={v => setMaintenanceForm({...maintenanceForm, endTime: v})} 
-                                      icon={<Clock size={14}/>}
-                                  />
-                              </div>
+        <div className="flex items-center justify-between p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-100">
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${maintenanceForm.isActive ? 'bg-amber-100 text-amber-600' : 'bg-slate-200 text-slate-500'}`}>
+              <Shield size={24} />
+            </div>
+            <div>
+              <p className="text-sm font-black text-slate-800">Maintenance Mode</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Instantly block/unblock student access</p>
+            </div>
+          </div>
+          
+          <button 
+            type="button"
+            onClick={() => setMaintenanceForm({...maintenanceForm, isActive: !maintenanceForm.isActive})}
+            className={`w-20 h-10 rounded-full relative transition-colors duration-300 ${maintenanceForm.isActive ? 'bg-indigo-600' : 'bg-slate-300'}`}
+          >
+            <div className={`absolute top-1 w-8 h-8 bg-white rounded-full transition-all duration-300 shadow-lg ${maintenanceForm.isActive ? 'left-11' : 'left-1'}`} />
+          </button>
+        </div>
 
-                              <div className="space-y-3">
-                                  <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1 flex items-center gap-2"><MessageSquare size={14}/> Notification Message</label>
-                                  <textarea 
-                                      className="w-full p-6 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none font-bold text-slate-700 min-h-[120px] focus:border-indigo-500 transition-all"
-                                      value={maintenanceForm.message}
-                                      onChange={e => setMaintenanceForm({...maintenanceForm, message: e.target.value})}
-                                  />
-                              </div>
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1 flex items-center gap-2"><MessageSquare size={14}/> Notification Message</label>
+          <textarea 
+            className="w-full p-6 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none font-bold text-slate-700 min-h-[120px] focus:border-indigo-500 transition-all"
+            value={maintenanceForm.message}
+            onChange={e => setMaintenanceForm({...maintenanceForm, message: e.target.value})}
+          />
+        </div>
 
-                              <button className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 uppercase text-sm tracking-widest active:scale-[0.98]">
-                                  <CheckCircle size={22}/> Deploy Window Configuration
-                              </button>
-                          </form>
+        <button className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 uppercase text-sm tracking-widest active:scale-[0.98]">
+          <CheckCircle size={22}/> Save & Apply Configuration
+        </button>
+      </form>
 
-                          <div className="mt-12 p-6 bg-amber-50 rounded-3xl border border-amber-100 flex gap-4">
-                              <AlertCircle className="text-amber-500 shrink-0" size={24}/>
-                              <p className="text-[11px] font-bold text-amber-800 leading-relaxed uppercase">Note: Once active, students will see a maintenance popup and placement analytics will be hidden. Faculty can continue updating records in the background.</p>
-                          </div>
-                      </div>
-                  </div>
+      <div className="mt-12 p-6 bg-amber-50 rounded-3xl border border-amber-100 flex gap-4">
+        <AlertCircle className="text-amber-500 shrink-0" size={24}/>
+        <p className="text-[11px] font-bold text-amber-800 leading-relaxed uppercase">Note: When active, students are instantly blocked across all sessions. No page reload is required for the restriction to take effect.</p>
+      </div>
+    </div>
+  </div>
                 ) : (
                     <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-white overflow-hidden">
                         <div className="overflow-x-auto custom-scrollbar">

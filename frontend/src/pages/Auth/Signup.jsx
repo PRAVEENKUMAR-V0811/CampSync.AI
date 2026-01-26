@@ -1,10 +1,10 @@
-// src/components/modules/auth/Signup.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CompanyScroller from '../CompanyScroller';
+import toast, { Toaster } from 'react-hot-toast';
 import { API_BASE_URL } from '../../api';
-import logo from "../../assets/logofinal.png"; 
+import logo from "../../assets/logofinal.png";
 import { Eye, EyeOff, User, Mail, Phone, GraduationCap, Building2, Calendar, ClipboardCheck, ArrowRight } from 'lucide-react';
 
 const Signup = ({ onSwitchToLogin }) => {
@@ -20,7 +20,6 @@ const Signup = ({ onSwitchToLogin }) => {
   const [passingYear, setPassingYear] = useState('');
   const [section, setSection] = useState('');
 
-  
   // New Fields State
   const [regNo, setRegNo] = useState('');
   const [cgpa, setCgpa] = useState('');
@@ -40,18 +39,25 @@ const Signup = ({ onSwitchToLogin }) => {
   const [phoneError, setPhoneError] = useState('');
   const [termsError, setTermsError] = useState('');
   const [signupError, setSignupError] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   const navigate = useNavigate();
 
-  const educationOptions = ["B.E", "B.Tech", "M.E", "M.Tech", "PhD", "MBA"];
-  const branchOptions = ["CSE", "CSE(AIML)", "EEE", "ECE", "IT"];
+  // Updated Options
+  const educationOptions = ["B.E", "B.Tech"];
+  const branchOptions = ["CSE(AI & ML)", "CSE(Cyber)", "CSE(IoT)", "CSE", "AIDS", "IT", "ECE", "EEE", "Civil", "Mechanical"];
+  const collegeOptions = ["Sri Krishna College of Technology (SKCT)", "Sri Krishna College of Engineering and Technology (SKCET)"];
+  const semesterOptions = ["1", "2", "3", "4", "5", "6", "7", "8"];
   const sectionOptions = ["A", "B", "C", "D"];
+  
   const currentYear = new Date().getFullYear();
   const passingYearOptions = Array.from({ length: 10 }, (_, i) => currentYear + 5 - i);
 
+  const allowedDomains = ['skct.edu.in'];
+
   const handleSignIn = () => {
-    navigate('/login')
-  }
+    navigate('/login');
+  };
 
   const validatePassword = (pwd) => {
     if (!pwd) return "Password cannot be empty.";
@@ -59,7 +65,18 @@ const Signup = ({ onSwitchToLogin }) => {
     if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter.";
     if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter.";
     if (!/\d/.test(pwd)) return "Password must contain at least one number.";
-    if (!/[!@#$%^&*()_+\-=[\]{};':\"\\|,.<>/?]/.test(pwd)) return "Password must contain at least one special character.";
+    if (!/[!@#$%^&*()_+-=[\]{};':"\\|,.<>/?]/.test(pwd)) return "Password must contain at least one special character.";
+    return '';
+  };
+
+  const validateInstitutionalEmail = (email) => {
+    if (!email) return "Email cannot be empty.";
+    const parts = email.split('@');
+    if (parts.length !== 2) return "Invalid email format.";
+    const domain = parts[1];
+    if (!allowedDomains.includes(domain)) {
+      return `Please use an institutional email from ${allowedDomains.join(' or ')}.`;
+    }
     return '';
   };
 
@@ -94,33 +111,48 @@ const Signup = ({ onSwitchToLogin }) => {
     }
   };
 
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    setEmailError(validateInstitutionalEmail(newEmail));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSignupError('');
     setIsLoading(true);
 
     let isValid = true;
-    if (validatePassword(password)) {
-      setPasswordError(validatePassword(password));
+
+    const emailValidationResult = validateInstitutionalEmail(email);
+    if (emailValidationResult) {
+      setEmailError(emailValidationResult);
       isValid = false;
-    } else setPasswordError('');
+    }
+
+    const pwdErr = validatePassword(password);
+    if (pwdErr) {
+      setPasswordError(pwdErr);
+      isValid = false;
+    }
 
     if (password !== confirmPassword) {
       setConfirmPasswordError("Passwords do not match.");
       isValid = false;
-    } else setConfirmPasswordError('');
+    }
 
     if (!/^\d{10}$/.test(phone)) {
       setPhoneError("Phone number must be 10 digits.");
       isValid = false;
-    } else setPhoneError('');
+    }
 
     if (!agreedToTerms) {
       setTermsError("You must agree to the Terms & Conditions.");
       isValid = false;
-    } else setTermsError('');
+    }
 
-    if (!name || !gender || !email || !education || !college || !branch || !passingYear || !phone || !password || !confirmPassword || !regNo || !section) {
+    // Strict Mandatory Check
+    if (!name || !gender || !email || !education || !college || !branch || !passingYear || !phone || !password || !confirmPassword || !regNo || !section || !currentSemester || !cgpa) {
       setSignupError('Please fill out all required fields.');
       isValid = false;
     }
@@ -142,25 +174,26 @@ const Signup = ({ onSwitchToLogin }) => {
           },
           config
         );
-        alert(`Account created for ${data.name}!`);
+        // alert(`Account created for ${data.name}!`);
+        toast.success(`Account created for ${data.name}!`);
         navigate('/login');
       } catch (error) {
         const errorMessage = error.response?.data?.message || error.message;
         setSignupError(errorMessage);
-        alert(`Signup failed: ${errorMessage}`);
+        toast.error(`Signup failed: ${errorMessage}`);
+        // alert(`Signup failed: ${errorMessage}`);
       } finally {
         setIsLoading(false);
       }
     } else {
-      alert('Please correct the form errors.');
+      toast.error('Please correct the form errors.');
+      // alert('Please correct the form errors.');
       setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-white relative">
-      
-      {/* FIXED LOGO AT TOP LEFT */}
       <div 
         className="absolute top-6 left-6 md:top-8 md:left-10 z-50 flex items-center gap-2 cursor-pointer group"
         onClick={() => navigate('/')}
@@ -172,7 +205,6 @@ const Signup = ({ onSwitchToLogin }) => {
         </div>
       </div>
 
-      {/* LEFT SECTION: FORM */}
       <div className="flex-1 flex items-start justify-center px-6 py-24 lg:py-25 overflow-y-auto max-h-screen custom-scrollbar">
         <div className="w-full max-w-2xl">
           <div className="mb-8">
@@ -188,7 +220,6 @@ const Signup = ({ onSwitchToLogin }) => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* --- SECTION: BASIC INFO --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">Full Name</label>
@@ -224,10 +255,11 @@ const Signup = ({ onSwitchToLogin }) => {
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     type="email" required disabled={isLoading}
-                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all"
-                    placeholder="name@university.edu" value={email} onChange={(e) => setEmail(e.target.value)}
+                    className={`w-full pl-12 pr-4 py-3.5 bg-slate-50 border ${emailError ? 'border-red-500' : 'border-slate-200'} rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all`}
+                    placeholder="name@university.edu" value={email} onChange={handleEmailChange}
                   />
                 </div>
+                {emailError && <p className="mt-1 text-xs font-bold text-red-500 ml-1">{emailError}</p>}
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">Phone Number</label>
@@ -243,7 +275,6 @@ const Signup = ({ onSwitchToLogin }) => {
               </div>
             </div>
 
-            {/* --- SECTION: PASSWORDS --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">Password</label>
@@ -275,7 +306,6 @@ const Signup = ({ onSwitchToLogin }) => {
               </div>
             </div>
 
-            {/* --- SECTION: ACADEMICS --- */}
             <div className="pt-4 border-t border-slate-100">
                <h3 className="text-sm font-black text-indigo-600 uppercase tracking-widest mb-4">Academic Details</h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -293,10 +323,13 @@ const Signup = ({ onSwitchToLogin }) => {
                     <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">College</label>
                     <div className="relative">
                       <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                      <input
-                        type="text" required disabled={isLoading} value={college} onChange={(e) => setCollege(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none"
-                      />
+                      <select
+                        required disabled={isLoading} value={college} onChange={(e) => setCollege(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none appearance-none"
+                      >
+                        <option value="" disabled>Select College</option>
+                        {collegeOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
                     </div>
                   </div>
                </div>
@@ -341,27 +374,29 @@ const Signup = ({ onSwitchToLogin }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">Semester</label>
-                  <input type="number" value={currentSemester} onChange={(e) => setCurrentSemester(e.target.value)} disabled={isLoading} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
+                  <select required value={currentSemester} onChange={(e) => setCurrentSemester(e.target.value)} disabled={isLoading} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none">
+                    <option value="" disabled>Select</option>
+                    {semesterOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
                </div>
                <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">Current CGPA</label>
-                  <input type="number" step="0.01" value={cgpa} onChange={(e) => setCgpa(e.target.value)} disabled={isLoading} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
+                  <input type="number" step="0.01" required value={cgpa} onChange={(e) => setCgpa(e.target.value)} disabled={isLoading} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
                </div>
                <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">Backlogs</label>
-                  <input type="number" value={currentBacklog} onChange={(e) => setCurrentBacklog(e.target.value)} disabled={isLoading} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
+                  <input type="number" required value={currentBacklog} onChange={(e) => setCurrentBacklog(e.target.value)} disabled={isLoading} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
                </div>
             </div>
 
             <div>
                <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">History of Arrear</label>
-               <select value={historyOfArrear} onChange={(e) => setHistoryOfArrear(e.target.value)} disabled={isLoading} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none">
+               <select required value={historyOfArrear} onChange={(e) => setHistoryOfArrear(e.target.value)} disabled={isLoading} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none">
                   <option value="No">No History of Arrears</option>
                   <option value="Yes">Has History of Arrears</option>
                </select>
             </div>
 
-            {/* --- TERMS AND SUBMIT --- */}
             <div className="pt-4">
               <div className="flex items-center gap-3 mb-6 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
                 <input
@@ -379,7 +414,7 @@ const Signup = ({ onSwitchToLogin }) => {
               <button
                 type="submit" disabled={isLoading}
                 className={`w-full py-4 rounded-2xl text-white font-bold text-lg shadow-xl shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-3
-                  ${isLoading ? 'bg-slate-400 cursor-wait' : 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'}
+                  ${isLoading ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'}
                 `}
               >
                 {isLoading ? (
@@ -400,7 +435,6 @@ const Signup = ({ onSwitchToLogin }) => {
         </div>
       </div>
 
-      {/* RIGHT SIDE: BRANDING */}
       <div className="flex-1 hidden lg:flex flex-col items-center justify-center p-12 bg-slate-950 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] -mr-48 -mt-48"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] -ml-48 -mb-48"></div>
@@ -411,7 +445,6 @@ const Signup = ({ onSwitchToLogin }) => {
           
           <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[2.5rem] shadow-2xl space-y-8">
             <CompanyScroller direction="ltr" speed="medium" theme="dark" />
-            {/* <CompanyScroller direction="rtl" speed="medium" theme="dark" /> */}
           </div>
 
           <div className="mt-12 p-8 bg-indigo-600 rounded-[2rem] text-white text-center shadow-2xl shadow-indigo-900/20">

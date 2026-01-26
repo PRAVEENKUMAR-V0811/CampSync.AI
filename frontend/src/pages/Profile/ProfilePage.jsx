@@ -722,7 +722,7 @@ const ProfilePage = () => {
             <div className="space-y-3">
                 <SidebarNav onClick={() => navigate('/placements/data')} icon={BarChart3} title="Placement Data" sub="Know about the Placement Trends" color="bg-indigo-600 text-white drop-shadow-sm" />
                 <SidebarNav onClick={() => navigate('/my-uploads')} icon={UploadCloud} title="My Uploads" sub="Manage your academic bank" color="bg-violet-600 text-white drop-shadow-sm" />
-                <SidebarNav onClick={() => navigate('/submit-feedback')} icon={Edit3} title="Share Experience" sub="Inspire peers with your journey" color="bg-sky-600 text-white drop-shadow-sm" />
+                <SidebarNav onClick={() => navigate('/share-experience')} icon={Edit3} title="Share Experience" sub="Inspire peers with your journey" color="bg-sky-600 text-white drop-shadow-sm" />
             </div>
 
             {/* 3. Support Container */}

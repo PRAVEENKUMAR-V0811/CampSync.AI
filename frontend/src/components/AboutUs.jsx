@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import bgimage from '../assets/MeetCampSync.png';
 import founder from '../assets/founder.jpg';
+import cofounder1 from '../assets/Cofounder_1.jpeg';
+import cofounder2 from '../assets/Cofounder_2.jpeg';
 
 const AboutUs = () => {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
@@ -17,22 +19,22 @@ const AboutUs = () => {
   const teamData = {
     founder: {
         name: "Mr. V. Praveen Kumar",
-        education: "B.E AIML",
+        education: "B.E CSE(AI & ML)",
         role: "Founder & CEO",
         image: founder,
         message: "CampSync.AI was born out of a simple observation: the gap between academic learning and corporate expectations is widening. Our mission is to empower every student with AI-driven insights to navigate their career path with confidence and clarity. We aren't just building a tool; we're building a bridge to the future.",
-        linkedin: "#"
+        linkedin: "https://www.linkedin.com/in/praveenkumar-v08/"
     },
     coFounders: [
-        { name: "Leadership Member One", role: "Chief Technical Officer", image: "https://via.placeholder.com/300x350", linkedin: "#" },
-        { name: "Leadership Member Two", role: "Chief Operating Officer", image: "https://via.placeholder.com/300x350", linkedin: "#" }
+        { name: "Mr. S. Yoga Narasimman",education: "B.E CSE(AI & ML)", role: "Co-Founder", image: cofounder1, linkedin: "https://www.linkedin.com/in/yoga-narasimman-s-38369a258" },
+        { name: "Mr. B. Santhosh", education: "B.E CSE(AI & ML)", role: "Co-Founder", image: cofounder2, linkedin: "https://www.linkedin.com/in/santhosh-b-8a9a82313" }
     ],
     facultyMentors: [
-        { name: "Dr. Mentor One", dept: "Dept. of Computer Science", title: "Professor & Head", image: "https://via.placeholder.com/200x200" },
-        { name: "Dr. Mentor Two", dept: "Dept. of Information Technology", title: "Associate Professor", image: "https://via.placeholder.com/200x200" },
-        { name: "Dr. Mentor Three", dept: "Placement Cell", title: "Coordinator", image: "https://via.placeholder.com/200x200" },
-        { name: "Dr. Mentor Four", dept: "Dept. of EEE", title: "Asst. Professor", image: "https://via.placeholder.com/200x200" },
-        { name: "Dr. Mentor Five", dept: "Dept. of AI & ML", title: "Senior Faculty", image: "https://via.placeholder.com/200x200" }
+        { name: "Dr. M.G. Sumithra", dept: "Sri Krishna College of Technology", title: "Principal", image: "https://via.placeholder.com/200x200" },
+        { name: "Dr. Suma Sira Jacob", dept: "Dept. of CSE(AI & ML)", title: "Head of Department", image: "https://via.placeholder.com/200x200" },
+        { name: "Ms. S. Soundarya", dept: "Dept. of CSE(AI & ML)", title: "Asst. Professor / Tutor", image: "https://via.placeholder.com/200x200" },
+        { name: "Ms. S. Pavithra", dept: "Dept. of CSE(IoT)", title: "Asst. Professor / Mentor", image: "https://via.placeholder.com/200x200" },
+        { name: "Ms. A. Sugitha", dept: "Dept. of CSE(Cyber Security)", title: "Asst. Professor / Co-ordinator", image: "https://via.placeholder.com/200x200" }
     ]
   };
 
@@ -245,7 +247,7 @@ const AboutUs = () => {
                     <Award className="text-emerald-500" size={20} />
                     <span className="text-emerald-600 font-bold tracking-widest uppercase text-xs">Founder Spotlight</span>
                 </div>
-                <h2 className="text-3xl font-black text-slate-900 mb-1">{teamData.founder.name} <span className="text-slate-400 text-sm ml-2">({teamData.founder.education})</span></h2>
+                <h2 className="text-3xl font-black text-slate-900 mb-1">{teamData.founder.name} <span className="text-slate-400 text-sm ml-2">{teamData.founder.education}</span></h2>
                 <p className="text-indigo-600 font-bold text-lg mb-6">{teamData.founder.role}</p>
                 
                 <div className="relative">
@@ -279,10 +281,11 @@ const AboutUs = () => {
                       <img 
                           src={member.image} 
                           alt={member.name} 
-                          className="w-full h-64 object-cover rounded-[2rem] mb-6 grayscale group-hover:grayscale-0 transition-all duration-500"
+                          className="w-full h-64 object-cover rounded-[2rem] mb-6 transition-all duration-500"
                       />
                       <div className="text-center pb-4 px-4">
                           <h4 className="text-xl font-bold text-slate-900">{member.name}</h4>
+                          <p className="text-indigo-600 font-medium text-sm mb-4">{member.education}</p>
                           <p className="text-indigo-600 font-medium text-sm mb-4">{member.role}</p>
                           <div className="flex justify-center">
                               <a href={member.linkedin} className="p-2 bg-slate-50 text-slate-400 rounded-full hover:bg-indigo-600 hover:text-white transition-colors">

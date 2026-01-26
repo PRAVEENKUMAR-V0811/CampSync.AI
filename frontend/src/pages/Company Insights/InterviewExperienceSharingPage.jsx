@@ -148,7 +148,7 @@ const InterviewExperienceSharingPage = () => {
               <div>
                 <label className={labelClasses}>Rounds Faced *</label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {["Aptitude", "Technical Quiz", "Coding round", "Group Discussion", "Hackathon", "Technical Interview", "HR interview", "Other"].map((round) => (
+                  {["Aptitude", "Technical Quiz", "Coding round", "Communication Round", "Group Discussion", "Hackathon", "Technical Interview", "HR interview", "Other"].map((round) => (
                     <label key={round} className={`flex items-center p-3 rounded-xl border-2 transition-all cursor-pointer text-sm font-semibold ${formData.roundsFaced.includes(round) ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'}`}>
                       <input type="checkbox" value={round} checked={formData.roundsFaced.includes(round)} onChange={handleChange} className="mr-2 h-4 w-4 accent-indigo-600" />
                       {round}

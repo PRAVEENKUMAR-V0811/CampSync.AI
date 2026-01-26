@@ -34,11 +34,11 @@ router.use(protect, authorize('admin'));
 
 // Admin sets the window
 router.post('/set-update-window', protect, authorize('admin'), async (req, res) => {
-  const { startTime, endTime, message } = req.body;
+  const { isActive, message } = req.body;
 
   await SystemConfig.findOneAndUpdate(
     { key: "placement_update_window" },
-    { startTime, endTime, message },
+    { isActive, message },
     { upsert: true, new: true }
   );
 

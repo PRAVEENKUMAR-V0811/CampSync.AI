@@ -50,10 +50,10 @@ const generateToken = (id) => {
 // @desc    Register a new student & Auto-assign Faculty
 // @route   POST /api/auth/signup
 router.post('/signup', async (req, res) => {
-  const { 
-    name, gender, email, password, phone, education, 
-    branch, passingYear, section, college, regNo, 
-    cgpa, currentSemester, historyOfArrear, currentBacklog 
+  const {
+    name, gender, email, password, phone, education,
+    branch, passingYear, section, college, regNo,
+    cgpa, currentSemester, historyOfArrear, currentBacklog
   } = req.body;
 
   try {
@@ -65,16 +65,6 @@ router.post('/signup', async (req, res) => {
       branch, 
       section, 
       passingYear 
-    });
-
-    // --- AUTOMATIC FACULTY MAPPING ---
-    // Look for a faculty member mapped to this specific class
-    const assignedFaculty = await User.findOne({
-      role: 'faculty',
-      education,
-      branch,
-      section,
-      passingYear // Or yearOfStudy depending on your mapping preference
     });
 
     const user = await User.create({
@@ -109,10 +99,10 @@ router.post('/signup', async (req, res) => {
             <div style="margin-top: 30px; text-align: center; color: #334155;">
               <p style="margin: 0; font-size: 14px;">Best Wishes from</p>
               <p style="margin: 6px 0 0 0; font-size: 15px; font-weight: 700;">
-                Mr. V. Praveen Kumar
+                Team
               </p>
               <p style="margin: 6px 0 0 0; font-size: 13px; font-weight: 600; color: #4f46e5;">
-                Founder of CampSync.AI
+                CampSync.AI - Your Future Starts Here
               </p>
             </div>
           </div>
@@ -121,21 +111,27 @@ router.post('/signup', async (req, res) => {
           </p>
         </div>
       `;
-      }
-      // Send email (we don't 'await' this so the user doesn't wait for the email to send before seeing 'Success')
+      // Trigger Email (async)
       sendEmail({
         email: user.email,
         subject: 'Welcome to CampSync.AI! Your journey starts here.',
         message: welcomeMessage
       }).catch(err => console.error("Welcome email failed", err));
 
+      // SEND SUCCESS RESPONSE IMMEDIATELY AFTER DB CREATION
+      return res.status(201).json({ 
+        _id: user._id, 
+        name: user.name,
+        token: generateToken(user._id), 
+        role: user.role 
+      });
+    }
 
-    res.status(201).json({ _id: user._id, token: generateToken(user._id), role: user.role });
   } catch (error) {
+    console.error("Signup error:", error);
     res.status(500).json({ message: 'Signup failed', error: error.message });
   }
 });
-
 
 // @desc    Authenticate user & get token
 // @route   POST /api/auth/login
@@ -305,32 +301,46 @@ router.put('/resetpassword/:resetToken', async (req, res) => {
 });
 
 // Public check for the dashboard
-router.get('/update-status', protect, async (req, res) => {
-  const config = await SystemConfig.findOne({ key: "placement_update_window" });
-  if (!config) return res.json({ isActive: false });
-
-  const now = new Date();
-  const isActive = now >= new Date(config.startTime) && now <= new Date(config.endTime);
-  
-  res.json({ 
-    isActive, 
-    endTime: config.endTime,
-    message: config.message 
-  });
-});
-
-// backend/routes/placement.js
-router.get('/trends', protect, async (req, res) => {
+// GET /api/auth/update-status
+router.get('/update-status', async (req, res) => {
   try {
-    // Only fetch fields needed for charts to protect student privacy
-    const placementData = await User.find({ role: 'user' })
-      .select('branch passingYear placementStatus packageLPA recentCompany createdAt placedDate offersCount');
+    const record = await SystemConfig.findOne({ key: 'placement_update_window' });
     
-    res.json(placementData);
+    // If no record exists, maintenance is NOT active by default
+    if (!record) return res.json({ isActive: false });
+
+    return res.json({
+      isActive: record.isActive, // Direct boolean check
+      message: record.message
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching trends", error: error.message });
+    console.error('update-status error:', error);
+    return res.status(500).json({ isActive: false });
   }
 });
+
+
+
+router.get('/trends', protect, async (req, res) => {
+  try {
+    const record = await SystemConfig.findOne({ key: 'placement_update_window' });
+
+    // Strictly block if isActive is true
+    if (record && record.isActive) {
+      return res.status(423).json({
+        message: 'Placement data is under maintenance'
+      });
+    }
+
+    const placementData = await User.find({ role: 'user' })
+      .select('branch passingYear placementStatus packageLPA recentCompany createdAt placedDate offersCount');
+
+    return res.json(placementData);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 router.get('/profile', protect, async (req, res) => {
   const user = await User.findById(req.user._id).select('-password'); // Exclude password
